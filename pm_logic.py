@@ -50,3 +50,6 @@ def generate_timeline(start_counter, last_completed, sequence, span):
         })
 
     return timeline
+
+def score_for_attempt(attempt_number, correct):
+    return None

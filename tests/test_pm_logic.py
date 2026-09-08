@@ -3,6 +3,7 @@ from datetime import date
 from pm_logic import resolve_job_plan
 from pm_logic import calculate_next_due_date
 from pm_logic import generate_timeline
+from pm_logic import score_for_attempt
 
 class PMLogicTest(unittest.TestCase):
     def test_resolve_job_plan(self):
@@ -18,7 +19,10 @@ class PMLogicTest(unittest.TestCase):
             }
         }
 
-        self.assertEqual(resolve_job_plan(5, sequence_entries), "JP114301M")
+        self.assertEqual(
+            resolve_job_plan(5, sequence_entries), 
+            "JP114301M"
+        )
 
     def test_resolve_job_plan_largest(self):
 
@@ -33,7 +37,10 @@ class PMLogicTest(unittest.TestCase):
             }
         }
 
-        self.assertEqual(resolve_job_plan(12, sequence_entries), "JP114306M")
+        self.assertEqual(
+            resolve_job_plan(12, sequence_entries),
+            "JP114306M"
+        )
 
     def test_calculate_next_due_date(self):
         self.assertEqual(
@@ -127,6 +134,30 @@ class PMLogicTest(unittest.TestCase):
             ),
             expected
         )
+
+    def test_score_for_attempt_success_attempt_1(self):
+        self.assertEqual(
+            score_for_attempt(1, True),
+            3
+        )
+
+    def test_score_for_attempt_success_attempt_2(self):
+        self.assertEqual(
+            score_for_attempt(2, True),
+            2
+        )
+
+    def test_score_for_attempt_success_attempt_3(self):
+        self.assertEqual(
+            score_for_attempt(3, True),
+            1
+        )
+
+    def test_score_for_attempt_fail(self):
+        self.assertEqual(
+            score_for_attempt(3, False),
+            0
+    )
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
