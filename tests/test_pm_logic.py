@@ -1,9 +1,11 @@
 import unittest
 from datetime import date
-from pm_logic import resolve_job_plan
-from pm_logic import calculate_next_due_date
-from pm_logic import generate_timeline
-from pm_logic import score_for_attempt
+from pm_logic import (
+    resolve_job_plan,
+    calculate_next_due_date,
+    generate_timeline,
+    score_for_attempt
+)
 
 class PMLogicTest(unittest.TestCase):
     def test_resolve_job_plan(self):
