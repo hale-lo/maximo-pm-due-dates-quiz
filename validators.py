@@ -1,7 +1,10 @@
 from datetime import date
 
 def validate_name(name):
-    return None
+    if not name:
+        return False, "Name cannot be empty"
+
+    return True, ""
 
 def validate_date(date_string):
     return None
