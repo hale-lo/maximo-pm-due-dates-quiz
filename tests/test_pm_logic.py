@@ -28,5 +28,8 @@ class PMLogicTest(unittest.TestCase):
     def test_calculate_next_due_date_leap_year(self):
             self.assertEqual(calculate_next_due_date(date(2028, 1, 31), 1), date(2028, 2, 29))
 
+    def test_calculate_next_due_date_december_boundry(self):
+            self.assertEqual(calculate_next_due_date(date(2026, 1, 31), 11), date(2026, 12, 31))
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
