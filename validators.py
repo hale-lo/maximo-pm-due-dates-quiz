@@ -1,7 +1,7 @@
 from datetime import date
 
 def validate_name(name):
-    if not name:
+    if not name.strip():
         return False, "Name cannot be empty"
 
     return True, ""
