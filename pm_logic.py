@@ -5,7 +5,9 @@ def resolve_job_plan(counter, sequence):
     best_jobplan = None
     largest_interval = 0
 
-    for jobplan, interval in sequence.items():
+    for jobplan, details in sequence.items():
+        interval = details["interval"]
+
         if counter % interval == 0:
             if interval > largest_interval:
                 largest_interval = interval
@@ -21,3 +23,6 @@ def calculate_next_due_date(last_completed, frequency_months):
     day = min(last_completed.day, monthrange(year, month)[1])
 
     return date(year, month, day)
+
+def generate_timeline(last_completed, sequence, start_counter, span):
+    return None
