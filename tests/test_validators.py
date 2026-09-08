@@ -13,3 +13,9 @@ class TestValidators(unittest.TestCase):
             validate_name("Yui Hale"),
             (True, "")
         )
+
+    def test_validate_name_empty(self):
+        self.assertEqual(
+            validate_name(""),
+            (False, "Name cannot be empty")
+        )
