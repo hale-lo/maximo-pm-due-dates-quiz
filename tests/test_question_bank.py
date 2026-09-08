@@ -34,3 +34,10 @@ class TestQuestionBank(unittest.TestCase):
             ),
             expected
         )
+
+    def test_create_sequence_invalid_frequencies(self):
+        with self.assertRaises(ValueError):
+            create_sequence(
+                11430,
+                [2, 3]
+            )
