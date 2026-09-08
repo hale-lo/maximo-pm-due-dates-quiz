@@ -52,4 +52,14 @@ def generate_timeline(start_counter, last_completed, sequence, span):
     return timeline
 
 def score_for_attempt(attempt_number, correct):
-    return None
+    if correct:
+        match attempt_number:
+            case 3:
+                return 1
+            case 2:
+                return 2
+            case 1:
+                return 3
+            case _:
+                return 0
+    return 0
