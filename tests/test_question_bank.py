@@ -81,3 +81,9 @@ class TestQuestionBank(unittest.TestCase):
             len(jobplan_ids),
             len(set(jobplan_ids))
         )
+
+    def test_generate_question_bank_same_seed(self):
+        first = generate_question_bank(seed=27)
+        second = generate_question_bank(seed=27)
+
+        self.assertEqual(first, second)
