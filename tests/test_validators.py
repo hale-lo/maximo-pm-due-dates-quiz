@@ -25,3 +25,9 @@ class TestValidators(unittest.TestCase):
             validate_name("   "),
             (False, "Name cannot be empty")
         )
+
+    def test_validate_date_valid(self):
+        self.assertEqual(
+            validate_date("01/01/2026"),
+            (True, "")
+        )
