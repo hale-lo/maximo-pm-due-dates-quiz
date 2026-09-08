@@ -31,3 +31,9 @@ class TestValidators(unittest.TestCase):
             validate_date("01/01/2026"),
             (True, "")
         )
+
+    def test_validate_date_invalid_format(self):
+        self.assertEqual(
+            validate_date("2026-01-31"),
+            (False, "Date must be in DD/MM/YYYY format")
+        )
