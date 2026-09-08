@@ -6,5 +6,5 @@ def validate_name(name):
 def validate_date(date_string):
     return None
 
-def validate_frequency(frequency, valid_frequencies):
+def validate_frequency(frequency, valid):
     return None
