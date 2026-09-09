@@ -2,6 +2,12 @@ import tkinter as tk
 from tkinter import ttk
 import ctypes
 
+from validators import (
+    validate_name,
+    validate_date,
+    validate_frequency
+)
+
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 class QuizApp(tk.Tk):
@@ -98,7 +104,7 @@ class QuizApp(tk.Tk):
             pady=(60, 0)
         )
 
-    def create_menu_button(self, text, command, pady=(10, 0)):
+    def create_menu_button(self, text, command, pady=(10, 0), side="top"):
         tk.Button(
             self.menu_frame,
             text=text,
@@ -114,6 +120,7 @@ class QuizApp(tk.Tk):
             cursor="hand2",
             command=command
         ).pack(
+            side=side,
             pady=pady
         )
 
@@ -139,7 +146,7 @@ class QuizApp(tk.Tk):
             fg=self.accent_colour
         ).pack(
             padx=30,
-            pady=(5, 0),
+            pady=(30, 10),
             anchor="w"
         )
 
@@ -188,8 +195,87 @@ class QuizApp(tk.Tk):
     def build_name_screen(self):
         self.reset_screen()
 
+        self.create_menu_button(
+            "Continue",
+            self.start_quiz,
+            pady=(30, 0),
+            side="top"
+        )
+
+        self.create_menu_button(
+            "Back",
+            self.build_landing_screen,
+            pady=(0, 30),
+            side="bottom"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text="Enter Your Name",
+            font=self.title_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(30, 10),
+            anchor="w"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text="Please enter your name before starting the quiz.",
+            font=self.instruction_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(0, 20),
+            anchor="w"
+        )
+
+        self.name_entry = tk.Entry(
+            self.content_frame,
+            font=self.instruction_font,
+            width=30
+        )
+
+        self.name_entry.pack(
+            padx=30,
+            pady=(0, 20),
+            anchor="w"
+        )
+
+        self.error_label = tk.Label(
+        self.content_frame,
+        text="",
+        font=self.instruction_font,
+        bg=self.bg_colour,
+        fg=self.error_colour
+        )
+
+        self.error_label.pack(
+            padx=30,
+            anchor="w"
+        )
+
+    def build_quiz_screen(self):
+            self.reset_screen()
+
     def build_leaderboard_screen(self):
         self.reset_screen()
+
+    def start_quiz(self):
+        name = self.name_entry.get()
+
+        valid, message = validate_name(name)
+
+        if not valid:
+            self.error_label.config(text=message)
+            return
+
+        self.player_name = name
+
+        self.build_quiz_screen()
 
 if __name__ == "__main__":
     app = QuizApp()
