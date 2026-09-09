@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from datetime import datetime
 import ctypes
 import sys
 
@@ -7,6 +8,12 @@ from validators import (
     validate_name,
     validate_date,
     validate_frequency
+)
+
+from question_bank import generate_question_bank
+from pm_logic import (
+    resolve_job_plan, 
+    calculate_next_due_date
 )
 
 if sys.platform == "win32":
@@ -107,8 +114,14 @@ class QuizApp(tk.Tk):
             pady=(60, 0)
         )
 
-    def create_menu_button(self, text, command, pady=(10, 0), side="top"):
-        tk.Button(
+    def create_menu_button(
+        self,
+        text,
+        command,
+        pady=(10, 0),
+        side="top"
+    ):
+        button = tk.Button(
             self.menu_frame,
             text=text,
             font=self.button_font,
@@ -122,10 +135,14 @@ class QuizApp(tk.Tk):
             height=2,
             cursor="hand2",
             command=command
-        ).pack(
+        )
+
+        button.pack(
             side=side,
             pady=pady
         )
+
+        return button
 
     def build_landing_screen(self):
         self.reset_screen()
@@ -262,10 +279,338 @@ class QuizApp(tk.Tk):
         )
 
     def build_quiz_screen(self):
-            self.reset_screen()
+        self.reset_screen()
+
+        self.submit_button = self.create_menu_button(
+            "Submit Answer",
+            self.submit_answer,
+            pady=(30, 0),
+            side="top"
+        )
+
+        question = self.current_question
+
+        next_counter = question["start_counter"] + 1
+
+        self.correct_jobplan = resolve_job_plan(
+            next_counter,
+            question["sequence"]
+        )
+
+        self.correct_frequency = question["sequence"][
+            self.correct_jobplan
+        ]["months"]
+
+        base_frequency = min(
+            details["months"]
+            for details in question["sequence"].values()
+        )
+
+        self.correct_due_date = calculate_next_due_date(
+            question["last_completed"],
+            base_frequency
+        )
+
+        self.attempts = 0
+
+        tk.Label(
+            self.content_frame,
+            text=f"Question {self.current_question_index + 1} of 10",
+            font=self.title_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(30, 20),
+            anchor="w"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text=f"Asset: {question['asset_name']}",
+            font=self.instruction_bold_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(5, 0),
+            anchor="w"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text=f"PM: {question['pm_id']}",
+            font=self.instruction_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(5, 0),
+            anchor="w"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text=(
+                "Last Completed: "
+                f"{question['last_completed'].strftime('%d/%m/%Y')}"
+            ),
+            font=self.instruction_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(5, 0),
+            anchor="w"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text=f"Current Counter: {question['start_counter']}",
+            font=self.instruction_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(5, 20),
+            anchor="w"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text="Job Plan Sequence",
+            font=self.instruction_bold_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(10, 5),
+            anchor="w"
+        )
+
+        for jobplan, details in question["sequence"].items():
+            tk.Label(
+                self.content_frame,
+                text=(
+                    f"{jobplan}    "
+                    f"Interval: {details['interval']}    "
+                    f"Frequency: {details['months']} months"
+                ),
+                font=self.instruction_font,
+                bg=self.bg_colour,
+                fg=self.accent_colour
+            ).pack(
+                padx=50,
+                pady=(3, 0),
+                anchor="w"
+            )
+
+        tk.Label(
+            self.content_frame,
+            text="Your Answer",
+            font=self.title_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(30, 10),
+            anchor="w"
+        )
+
+        answer_frame = tk.Frame(
+            self.content_frame,
+            bg=self.bg_colour
+        )
+
+        answer_frame.pack(
+            padx=30,
+            pady=(5, 10),
+            anchor="w"
+        )
+
+        date_frame = tk.Frame(
+            answer_frame,
+            bg=self.bg_colour
+        )
+
+        date_frame.pack(
+            side="left",
+            padx=(0, 40)
+        )
+
+        tk.Label(
+            date_frame,
+            text="Next due date:",
+            font=self.instruction_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            anchor="w",
+            pady=(0, 5)
+        )
+
+        self.date_entry = tk.Entry(
+            date_frame,
+            font=self.instruction_font,
+            width=20
+        )
+
+        self.date_entry.pack(
+            anchor="w"
+        )
+
+        frequency_frame = tk.Frame(
+            answer_frame,
+            bg=self.bg_colour
+        )
+
+        frequency_frame.pack(
+            side="left"
+        )
+
+        tk.Label(
+            frequency_frame,
+            text="Next frequency:",
+            font=self.instruction_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            anchor="w",
+            pady=(0, 5)
+        )
+
+        self.valid_frequencies = sorted(
+            details["months"]
+            for details in question["sequence"].values()
+        )
+
+        self.frequency_var = tk.StringVar()
+
+        self.frequency_dropdown = ttk.Combobox(
+            frequency_frame,
+            textvariable=self.frequency_var,
+            values=self.valid_frequencies,
+            font=self.instruction_font,
+            width=18,
+            state="readonly"
+        )
+
+        self.frequency_dropdown.pack(
+            anchor="w"
+        )
+
+        self.answer_error_label = tk.Label(
+            self.content_frame,
+            text="",
+            font=self.instruction_font,
+            bg=self.bg_colour,
+            fg=self.error_colour
+        )
+
+        self.answer_error_label.pack(
+            padx=30,
+            pady=(5, 0),
+            anchor="w"
+        )
+
+    def submit_answer(self):
+        due_date_text = self.date_entry.get()
+        frequency_text = self.frequency_var.get()
+
+        valid, message = validate_date(due_date_text)
+
+        if not valid:
+            self.answer_error_label.config(
+                text=message,
+                fg=self.error_colour
+            )
+            return
+
+        if frequency_text:
+            frequency = int(frequency_text)
+        else:
+            frequency = None
+
+        valid, message = validate_frequency(
+            frequency,
+            self.valid_frequencies
+        )
+
+        if not valid:
+            self.answer_error_label.config(
+                text=message,
+                fg=self.error_colour
+            )
+            return
+
+        self.answer_error_label.config(text="")
+
+        submitted_date = datetime.strptime(
+            due_date_text,
+            "%d/%m/%Y"
+        ).date()
+
+        self.attempts += 1
+
+        correct = (
+            submitted_date == self.correct_due_date
+            and frequency == self.correct_frequency
+        )
+
+        if correct:
+            print(f"Correct on attempt {self.attempts}")
+
+            self.complete_question(
+                "Correct!",
+                self.correct_colour
+            )
+
+        else:
+            print(f"Incorrect on attempt {self.attempts}")
+
+            if self.attempts >= 3:
+                self.complete_question(
+                    "No attempts remaining.",
+                    self.error_colour
+                )
+
+
+    def complete_question(self, message, colour):
+        self.date_entry.config(
+            state="disabled"
+        )
+
+        self.frequency_dropdown.config(
+            state="disabled"
+        )
+
+        self.submit_button.config(
+            state="disabled"
+        )
+
+        self.answer_error_label.config(
+            text=message,
+            fg=colour
+        )
+
+        if self.current_question_index == len(self.questions) - 1:
+            button_text = "View Results"
+        else:
+            button_text = "Next Question"
+
+        self.create_menu_button(
+            button_text,
+            self.next_question,
+            pady=(10, 0),
+            side="top"
+        )
+
+    def next_question(self):
+        print("Next question")
 
     def build_leaderboard_screen(self):
         self.reset_screen()
+
 
     def start_quiz(self):
         name = self.name_entry.get()
@@ -278,8 +623,15 @@ class QuizApp(tk.Tk):
 
         self.player_name = name
 
-        self.build_quiz_screen()
+        self.questions = generate_question_bank(
+            number_of_questions=10
+        )
 
+        self.current_question_index = 0
+        self.current_question = self.questions[0]
+
+        self.build_quiz_screen()
+    
 if __name__ == "__main__":
     app = QuizApp()
     app.mainloop()
