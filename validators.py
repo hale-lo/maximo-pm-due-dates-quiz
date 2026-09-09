@@ -18,4 +18,7 @@ def validate_date(date_string):
     return True, ""
 
 def validate_frequency(frequency, valid):
-    return None
+    if frequency not in valid:
+        return False, "Frequency is not valid"
+
+    return True, ""
