@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import ctypes
+import sys
 
 from validators import (
     validate_name,
@@ -8,7 +9,8 @@ from validators import (
     validate_frequency
 )
 
-ctypes.windll.shcore.SetProcessDpiAwareness(1)
+if sys.platform == "win32":
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 class QuizApp(tk.Tk):
     def __init__(self):
@@ -33,16 +35,17 @@ class QuizApp(tk.Tk):
         self.resizable(False, False)
         self.configure(bg=self.bg_colour)
 
-        hwnd = ctypes.windll.user32.GetParent(self.winfo_id())
+        if sys.platform == "win32":
+            hwnd = ctypes.windll.user32.GetParent(self.winfo_id())
 
-        value = ctypes.c_int(1)
+            value = ctypes.c_int(1)
 
-        ctypes.windll.dwmapi.DwmSetWindowAttribute(
-            hwnd,
-            20,
-            ctypes.byref(value),
-            ctypes.sizeof(value)
-        )
+            ctypes.windll.dwmapi.DwmSetWindowAttribute(
+                hwnd,
+                20,
+                ctypes.byref(value),
+                ctypes.sizeof(value)
+            )
 
         self.build_landing_screen()
 
