@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 
 def validate_name(name):
     if not name.strip():
@@ -9,6 +9,11 @@ def validate_name(name):
 def validate_date(date_string):
     if not date_string.strip():
         return False, "Date cannot be empty"
+
+    try:
+        datetime.strptime(date_string, "%d/%m/%Y")
+    except ValueError:
+        return False, "Date must be in DD/MM/YYYY format"
 
     return True, ""
 
