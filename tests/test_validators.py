@@ -38,6 +38,12 @@ class TestValidators(unittest.TestCase):
             (False, "Date must be in DD/MM/YYYY format")
         )
 
+    def test_validate_date_impossible_date(self):
+        self.assertEqual(
+            validate_date("31/02/2026"),
+            (False, "Date must be in DD/MM/YYYY format")
+        )
+
     def test_validate_frequency_valid(self):
         self.assertEqual(
             validate_frequency(6, [1, 2, 3, 6, 12, 24, 60]),
