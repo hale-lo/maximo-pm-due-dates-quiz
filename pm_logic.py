@@ -34,7 +34,8 @@ def generate_timeline(start_counter, last_completed, sequence, span):
     )
 
     for i in range(span):
-        counter = (start_counter + 1) + i 
+
+        counter = (start_counter + 1) + i
 
         jobplan = resolve_job_plan(counter, sequence)
 

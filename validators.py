@@ -17,8 +17,11 @@ def validate_date(date_string):
 
     return True, ""
 
-def validate_frequency(frequency, valid):
-    if frequency not in valid:
+def validate_frequency(frequency_text, valid):
+    if not frequency_text:
+        return False, "Frequency cannot be empty"
+
+    if int(frequency_text) not in valid:
         return False, "Frequency is not valid"
 
     return True, ""

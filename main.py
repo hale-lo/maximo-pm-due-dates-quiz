@@ -12,7 +12,7 @@ from validators import (
 
 from question_bank import generate_question_bank
 from pm_logic import (
-    resolve_job_plan, 
+    resolve_job_plan,
     calculate_next_due_date
 )
 
@@ -59,7 +59,6 @@ class QuizApp(tk.Tk):
     def empty_screen(self):
         for widget in self.winfo_children():
             widget.destroy()
-
 
     def reset_screen(self):
         self.empty_screen()
@@ -266,11 +265,11 @@ class QuizApp(tk.Tk):
         )
 
         self.error_label = tk.Label(
-        self.content_frame,
-        text="",
-        font=self.instruction_font,
-        bg=self.bg_colour,
-        fg=self.error_colour
+            self.content_frame,
+            text="",
+            font=self.instruction_font,
+            bg=self.bg_colour,
+            fg=self.error_colour
         )
 
         self.error_label.pack(
@@ -289,7 +288,7 @@ class QuizApp(tk.Tk):
         )
 
         question = self.current_question
-
+        self.incorrect_guesses = []
         next_counter = question["start_counter"] + 1
 
         self.correct_jobplan = resolve_job_plan(
@@ -499,6 +498,28 @@ class QuizApp(tk.Tk):
             anchor="w"
         )
 
+        tk.Label(
+            self.content_frame,
+            text="Incorrect Guesses",
+            font=self.instruction_bold_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(15, 5),
+            anchor="w"
+        )
+
+        self.incorrect_guesses_frame = tk.Frame(
+            self.content_frame,
+            bg=self.bg_colour
+        )
+
+        self.incorrect_guesses_frame.pack(
+            padx=30,
+            anchor="w"
+        )
+
         self.answer_error_label = tk.Label(
             self.content_frame,
             text="",
@@ -520,27 +541,16 @@ class QuizApp(tk.Tk):
         valid, message = validate_date(due_date_text)
 
         if not valid:
-            self.answer_error_label.config(
-                text=message,
-                fg=self.error_colour
-            )
+            self.answer_error_label.config(text=message)
             return
 
-        if frequency_text:
-            frequency = int(frequency_text)
-        else:
-            frequency = None
-
         valid, message = validate_frequency(
-            frequency,
+            frequency_text,
             self.valid_frequencies
         )
 
         if not valid:
-            self.answer_error_label.config(
-                text=message,
-                fg=self.error_colour
-            )
+            self.answer_error_label.config(text=message)
             return
 
         self.answer_error_label.config(text="")
@@ -549,6 +559,8 @@ class QuizApp(tk.Tk):
             due_date_text,
             "%d/%m/%Y"
         ).date()
+
+        frequency = int(frequency_text)
 
         self.attempts += 1
 
@@ -568,12 +580,31 @@ class QuizApp(tk.Tk):
         else:
             print(f"Incorrect on attempt {self.attempts}")
 
+            self.incorrect_guesses.append({
+                "date": submitted_date,
+                "frequency": frequency
+            })
+
+            tk.Label(
+                self.incorrect_guesses_frame,
+                text=(
+                    f"Attempt {self.attempts}: "
+                    f"{submitted_date.strftime('%d/%m/%Y')}  |  "
+                    f"{frequency} months"
+                ),
+                font=self.instruction_font,
+                bg=self.bg_colour,
+                fg=self.error_colour
+            ).pack(
+                anchor="w",
+                pady=(2, 0)
+            )
+
             if self.attempts >= 3:
                 self.complete_question(
                     "No attempts remaining.",
                     self.error_colour
                 )
-
 
     def complete_question(self, message, colour):
         self.date_entry.config(
@@ -611,7 +642,6 @@ class QuizApp(tk.Tk):
     def build_leaderboard_screen(self):
         self.reset_screen()
 
-
     def start_quiz(self):
         name = self.name_entry.get()
 
@@ -631,7 +661,7 @@ class QuizApp(tk.Tk):
         self.current_question = self.questions[0]
 
         self.build_quiz_screen()
-    
+
 if __name__ == "__main__":
     app = QuizApp()
     app.mainloop()

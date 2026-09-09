@@ -91,10 +91,10 @@ def generate_frequencies(rng):
         replace=False
     )
 
-    frequencies = [base_frequency]
-
-    for frequency in other_frequencies:
-        frequencies.append(int(frequency))
+    frequencies = [base_frequency] + [
+        int(frequency)
+        for frequency in other_frequencies
+    ]
 
     frequencies.sort()
 
