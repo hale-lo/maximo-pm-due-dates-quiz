@@ -60,3 +60,9 @@ class TestValidators(unittest.TestCase):
             validate_frequency("abc", [1, 2, 3, 6, 12, 24, 60]),
             (False, "Frequency must be a whole number")
         )
+
+    def test_validate_frequency_empty(self):
+        self.assertEqual(
+            validate_frequency("", [1, 2, 3, 6, 12, 24, 60]),
+            (False, "Frequency cannot be empty")
+        )

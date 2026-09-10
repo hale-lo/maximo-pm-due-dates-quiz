@@ -3,6 +3,7 @@ from datetime import date
 from pm_logic import (
     resolve_job_plan,
     calculate_next_due_date,
+    get_base_frequency,
     generate_timeline,
     score_for_attempt
 )
@@ -58,6 +59,27 @@ class PMLogicTest(unittest.TestCase):
         self.assertEqual(
             calculate_next_due_date(date(2026, 1, 31), 11),
             date(2026, 12, 31)
+        )
+
+    def test_get_base_frequency(self):
+        sequence_entries = {
+            "JP114306M": {
+                "interval": 6,
+                "months": 6
+            },
+            "JP114301M": {
+                "interval": 1,
+                "months": 1
+            },
+            "JP114305Y": {
+                "interval": 60,
+                "months": 60
+            }
+        }
+
+        self.assertEqual(
+            get_base_frequency(sequence_entries),
+            1
         )
 
     def test_generate_timeline(self):
