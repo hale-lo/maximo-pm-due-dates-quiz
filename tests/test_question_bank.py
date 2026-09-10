@@ -1,6 +1,7 @@
 import unittest
 from datetime import date
 from question_bank import (
+    Question,
     create_question,
     create_sequence,
     generate_question_bank
@@ -15,13 +16,13 @@ class TestQuestionBank(unittest.TestCase):
             }
         }
 
-        expected = {
-            "asset_name": "AHU-1234",
-            "pm_id": "PM12345",
-            "sequence": sequence,
-            "last_completed": date(2025, 12, 1),
-            "start_counter": 59
-        }
+        expected = Question(
+            asset_name="AHU-1234",
+            pm_id="PM12345",
+            sequence=sequence,
+            last_completed=date(2025, 12, 1),
+            start_counter=59
+        )
 
         self.assertEqual(
             create_question(
@@ -50,12 +51,12 @@ class TestQuestionBank(unittest.TestCase):
         self.assertEqual(len(questions), 10)
 
         asset_numbers = [
-            question["asset_name"].split("-")[-1]
+            question.asset_name.split("-")[-1]
             for question in questions
         ]
 
         pm_ids = [
-            question["pm_id"]
+            question.pm_id
             for question in questions
         ]
 
@@ -63,7 +64,7 @@ class TestQuestionBank(unittest.TestCase):
 
         for question in questions:
             jobplan_ids.extend(
-                question["sequence"].keys()
+                question.sequence.keys()
             )
 
         self.assertEqual(

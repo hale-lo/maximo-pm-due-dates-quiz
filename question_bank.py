@@ -1,5 +1,14 @@
+from dataclasses import dataclass
 from datetime import date
 import numpy as np
+
+@dataclass
+class Question:
+    asset_name: str
+    pm_id: str
+    sequence: dict
+    last_completed: date
+    start_counter: int
 
 ASSET_TYPES = [
     "AHU",
@@ -28,13 +37,13 @@ def create_question(
     last_completed,
     start_counter
 ):
-    return {
-        "asset_name": asset_name,
-        "pm_id": pm_id,
-        "sequence": sequence,
-        "last_completed": last_completed,
-        "start_counter": start_counter
-    }
+    return Question(
+        asset_name=asset_name,
+        pm_id=pm_id,
+        sequence=sequence,
+        last_completed=last_completed,
+        start_counter=start_counter
+    )
 
 def create_sequence(jobplan_id, frequencies):
     sequence = {}

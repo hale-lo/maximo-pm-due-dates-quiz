@@ -32,18 +32,15 @@ from storage import (
 if sys.platform == "win32":
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
-# Fixed categorical order - CVD-safe for adjacent pairs (validated against
-# this app's chart background, #F2EFEC). Never cycled or reassigned by rank,
-# so a job plan keeps its colour and marker for the life of a question.
 JOBPLAN_COLOURS = [
-    "#2a78d6",  # blue
-    "#eb6834",  # orange
-    "#1baf7a",  # aqua
-    "#eda100",  # yellow
-    "#e87ba4",  # magenta
-    "#008300",  # green
-    "#4a3aa7",  # violet
-    "#e34948",  # red
+    "#FF0000",
+    "#FF7F00",
+    "#FFFF00",
+    "#00FF00",
+    "#0000FF",
+    "#4B0082",
+    "#8B00FF",
+    "#000000",
 ]
 
 JOBPLAN_MARKERS = ["o", "s", "^", "D", "v", "P", "X", "*"]
@@ -180,9 +177,6 @@ class QuizApp(tk.Tk):
     def configure_treeview_style(self):
         style = ttk.Style(self)
 
-        # "clam" is a pure-Tk theme, unlike Windows' native "vista" theme,
-        # which ignores custom Treeview colours - needed for the palette
-        # below to actually take effect.
         style.theme_use("clam")
 
         style.configure(
@@ -369,19 +363,19 @@ class QuizApp(tk.Tk):
         question = self.current_question
         self.incorrect_guesses = []
 
-        self.base_frequency = get_base_frequency(question["sequence"])
+        self.base_frequency = get_base_frequency(question.sequence)
 
         next_pm = generate_timeline(
-            question["start_counter"],
-            question["last_completed"],
-            question["sequence"],
+            question.start_counter,
+            question.last_completed,
+            question.sequence,
             1
         )[0]
 
         self.correct_jobplan = next_pm["jobplan"]
         self.correct_due_date = next_pm["due_date"]
 
-        self.correct_frequency = question["sequence"][
+        self.correct_frequency = question.sequence[
             self.correct_jobplan
         ]["months"]
 
@@ -435,7 +429,7 @@ class QuizApp(tk.Tk):
 
         self.valid_frequencies = sorted(
             details["months"]
-            for details in question["sequence"].values()
+            for details in question.sequence.values()
         )
 
         self.frequency_var = tk.StringVar()
@@ -559,7 +553,7 @@ class QuizApp(tk.Tk):
 
         tk.Label(
             asset_frame,
-            text=f"Asset: {question['asset_name']}",
+            text=f"Asset: {question.asset_name}",
             font=self.instruction_bold_font,
             bg=self.bg_colour,
             fg=self.accent_colour
@@ -570,7 +564,7 @@ class QuizApp(tk.Tk):
 
         tk.Label(
             asset_frame,
-            text=f"PM: {question['pm_id']}",
+            text=f"PM: {question.pm_id}",
             font=self.instruction_font,
             bg=self.bg_colour,
             fg=self.accent_colour
@@ -583,7 +577,7 @@ class QuizApp(tk.Tk):
             asset_frame,
             text=(
                 "Last Completed: "
-                f"{question['last_completed'].strftime('%d/%m/%Y')}"
+                f"{question.last_completed.strftime('%d/%m/%Y')}"
             ),
             font=self.instruction_font,
             bg=self.bg_colour,
@@ -595,7 +589,7 @@ class QuizApp(tk.Tk):
 
         tk.Label(
             asset_frame,
-            text=f"Current Counter: {question['start_counter']}",
+            text=f"Current Counter: {question.start_counter}",
             font=self.instruction_font,
             bg=self.bg_colour,
             fg=self.accent_colour
@@ -630,7 +624,7 @@ class QuizApp(tk.Tk):
             pady=(0, 15)
         )
 
-        for jobplan, details in question["sequence"].items():
+        for jobplan, details in question.sequence.items():
             tk.Label(
                 jobplan_frame,
                 text=(
@@ -746,11 +740,11 @@ class QuizApp(tk.Tk):
 
         self.question_results.append({
             "question_number": self.current_question_index + 1,
-            "asset_name": self.current_question["asset_name"],
-            "pm_id": self.current_question["pm_id"],
-            "last_completed": self.current_question["last_completed"],
-            "start_counter": self.current_question["start_counter"],
-            "sequence": self.current_question["sequence"],
+            "asset_name": self.current_question.asset_name,
+            "pm_id": self.current_question.pm_id,
+            "last_completed": self.current_question.last_completed,
+            "start_counter": self.current_question.start_counter,
+            "sequence": self.current_question.sequence,
             "correct_due_date": self.correct_due_date,
             "correct_frequency": self.correct_frequency,
             "submitted_due_date": submitted_due_date,
@@ -853,9 +847,9 @@ class QuizApp(tk.Tk):
 
         self.render_timeline_chart(
             self.content_frame,
-            question["last_completed"],
-            question["start_counter"],
-            question["sequence"],
+            question.last_completed,
+            question.start_counter,
+            question.sequence,
             self.correct_due_date
         )
 
@@ -1366,7 +1360,7 @@ class QuizApp(tk.Tk):
         self.build_row_table(
             self.content_frame,
             (
-                ("Q#", 6, "center"),
+                ("Question", 6, "center"),
                 ("Asset", 28, "w"),
                 ("Result", 14, "center"),
                 ("Score", 10, "center")
