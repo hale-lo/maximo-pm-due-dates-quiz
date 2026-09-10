@@ -24,14 +24,17 @@ def calculate_next_due_date(last_completed, frequency_months):
 
     return date(year, month, day)
 
+def get_base_frequency(sequence):
+    return min(
+        details["months"]
+        for details in sequence.values()
+    )
+
 def generate_timeline(start_counter, last_completed, sequence, span):
     timeline = []
     current_date = last_completed
 
-    frequency_months = min(
-        details["months"]
-        for details in sequence.values()
-    )
+    frequency_months = get_base_frequency(sequence)
 
     for i in range(span):
 

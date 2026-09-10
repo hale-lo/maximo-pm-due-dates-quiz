@@ -4,6 +4,10 @@ from datetime import datetime
 import ctypes
 import sys
 
+import matplotlib.dates as mdates
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 from validators import (
     validate_name,
     validate_date,
@@ -12,12 +16,29 @@ from validators import (
 
 from question_bank import generate_question_bank
 from pm_logic import (
-    resolve_job_plan,
-    calculate_next_due_date
+    calculate_next_due_date,
+    generate_timeline,
+    get_base_frequency
 )
 
 if sys.platform == "win32":
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
+
+# Fixed categorical order - CVD-safe for adjacent pairs (validated against
+# this app's chart background, #F2EFEC). Never cycled or reassigned by rank,
+# so a job plan keeps its colour and marker for the life of a question.
+JOBPLAN_COLOURS = [
+    "#2a78d6",  # blue
+    "#eb6834",  # orange
+    "#1baf7a",  # aqua
+    "#eda100",  # yellow
+    "#e87ba4",  # magenta
+    "#008300",  # green
+    "#4a3aa7",  # violet
+    "#e34948",  # red
+]
+
+JOBPLAN_MARKERS = ["o", "s", "^", "D", "v", "P", "X", "*"]
 
 class QuizApp(tk.Tk):
     def __init__(self):
@@ -26,10 +47,10 @@ class QuizApp(tk.Tk):
         self.title("Quiz - Maximo - PM Due Dates")
         self.geometry("1440x1024")
 
-        self.title_font = ("Segoe UI", 22, "bold")
-        self.instruction_font = ("Segoe UI", 12)
-        self.instruction_bold_font = ("Segoe UI", 12, "bold")
-        self.button_font = ("Segoe UI", 9, "bold")
+        self.title_font = ("Cormorant Garamond", 22, "bold")
+        self.instruction_font = ("Cormorant Garamond", 12)
+        self.instruction_bold_font = ("Cormorant Garamond", 12, "bold")
+        self.button_font = ("Cormorant Garamond", 9, "bold")
 
         self.bg_colour = "#F2EFEC"
         self.connected_colour = "#D1C6BD"
@@ -101,6 +122,9 @@ class QuizApp(tk.Tk):
             expand=True
         )
 
+        self.build_content_header()
+
+    def build_content_header(self):
         tk.Label(
             self.content_frame,
             text=": PM Due Dates",
@@ -274,7 +298,7 @@ class QuizApp(tk.Tk):
 
         self.error_label.pack(
             padx=30,
-            anchor="center"
+            anchor="w"
         )
 
     def build_quiz_screen(self):
@@ -282,26 +306,22 @@ class QuizApp(tk.Tk):
 
         question = self.current_question
         self.incorrect_guesses = []
-        next_counter = question["start_counter"] + 1
 
-        self.correct_jobplan = resolve_job_plan(
-            next_counter,
-            question["sequence"]
-        )
+        self.base_frequency = get_base_frequency(question["sequence"])
+
+        next_pm = generate_timeline(
+            question["start_counter"],
+            question["last_completed"],
+            question["sequence"],
+            1
+        )[0]
+
+        self.correct_jobplan = next_pm["jobplan"]
+        self.correct_due_date = next_pm["due_date"]
 
         self.correct_frequency = question["sequence"][
             self.correct_jobplan
         ]["months"]
-
-        base_frequency = min(
-            details["months"]
-            for details in question["sequence"].values()
-        )
-
-        self.correct_due_date = calculate_next_due_date(
-            question["last_completed"],
-            base_frequency
-        )
 
         self.attempts = 0
 
@@ -394,13 +414,15 @@ class QuizApp(tk.Tk):
             side="top"
         )
 
-        tk.Label(
+        self.incorrect_guesses_label = tk.Label(
             self.menu_frame,
             text="Incorrect\nGuesses",
             font=self.instruction_bold_font,
             bg=self.primary_colour,
             fg=self.bg_colour
-        ).pack(
+        )
+
+        self.incorrect_guesses_label.pack(
             padx=15,
             pady=(5, 5),
             anchor="center"
@@ -419,7 +441,10 @@ class QuizApp(tk.Tk):
 
         tk.Label(
             self.content_frame,
-            text=f"Question {self.current_question_index + 1} of 10",
+            text=(
+                f"Question {self.current_question_index + 1} "
+                f"of {len(self.questions)}"
+            ),
             font=self.title_font,
             bg=self.bg_colour,
             fg=self.accent_colour
@@ -644,6 +669,9 @@ class QuizApp(tk.Tk):
                 )
 
     def complete_question(self, message, colour):
+        self.incorrect_guesses_label.destroy()
+        self.incorrect_guesses_frame.destroy()
+
         self.date_entry.config(
             state="disabled"
         )
@@ -661,6 +689,30 @@ class QuizApp(tk.Tk):
             fg=colour
         )
 
+        tk.Label(
+            self.menu_frame,
+            text="Correct Answer",
+            font=self.instruction_bold_font,
+            bg=self.primary_colour,
+            fg=self.bg_colour
+        ).pack(
+            pady=(20, 5)
+        )
+
+        tk.Label(
+            self.menu_frame,
+            text=(
+                f"{self.correct_due_date.strftime('%d/%m/%Y')}\n"
+                f"{self.correct_frequency} months"
+            ),
+            font=self.instruction_font,
+            bg=self.primary_colour,
+            fg=self.correct_colour,
+            justify="center"
+        ).pack()
+
+        self.build_timeline_screen()
+
         if self.current_question_index == len(self.questions) - 1:
             button_text = "View Results"
         else:
@@ -669,8 +721,199 @@ class QuizApp(tk.Tk):
         self.create_menu_button(
             button_text,
             self.next_question,
-            pady=(10, 0),
+            pady=(20, 0),
             side="top"
+        )
+
+    def build_timeline_screen(self):
+        question = self.current_question
+
+        for widget in self.content_frame.winfo_children():
+            widget.destroy()
+
+        self.build_content_header()
+
+        tk.Label(
+            self.content_frame,
+            text=(
+                f"Question {self.current_question_index + 1} "
+                "- Correct PM Timeline"
+            ),
+            font=self.title_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(30, 5),
+            anchor="w"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text="Scheduled maintenance activity for the next two years.",
+            font=self.instruction_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(0, 20),
+            anchor="w"
+        )
+
+        timeline_start = self.correct_due_date
+
+        timeline_end = calculate_next_due_date(
+            timeline_start,
+            24
+        )
+
+        timeline_span = (
+            24 // self.base_frequency
+        ) + 1
+
+        timeline = generate_timeline(
+            question["start_counter"],
+            question["last_completed"],
+            question["sequence"],
+            timeline_span
+        )
+
+        timeline_dates = [
+            item["due_date"]
+            for item in timeline
+        ]
+
+        jobplans_by_frequency = sorted(
+            question["sequence"].items(),
+            key=lambda entry: entry[1]["months"]
+        )
+
+        jobplan_styles = {
+            jobplan: {
+                "colour": JOBPLAN_COLOURS[index % len(JOBPLAN_COLOURS)],
+                "marker": JOBPLAN_MARKERS[index % len(JOBPLAN_MARKERS)]
+            }
+            for index, (jobplan, details) in enumerate(jobplans_by_frequency)
+        }
+
+        figure = Figure(
+            figsize=(10, 5),
+            dpi=100,
+            facecolor=self.bg_colour
+        )
+
+        axis = figure.add_subplot(111)
+
+        axis.set_facecolor(self.bg_colour)
+
+        if timeline_dates:
+            axis.hlines(
+                y=0,
+                xmin=timeline_start,
+                xmax=timeline_end,
+                color=self.connected_colour,
+                linewidth=3,
+                zorder=1
+            )
+
+            axis.vlines(
+                timeline_dates,
+                ymin=-0.08,
+                ymax=0.08,
+                color=self.connected_colour,
+                linewidth=2,
+                zorder=2
+            )
+
+            for jobplan, details in jobplans_by_frequency:
+                style = jobplan_styles[jobplan]
+
+                jobplan_dates = [
+                    item["due_date"]
+                    for item in timeline
+                    if item["jobplan"] == jobplan
+                ]
+
+                if not jobplan_dates:
+                    continue
+
+                axis.scatter(
+                    jobplan_dates,
+                    [0] * len(jobplan_dates),
+                    color=style["colour"],
+                    marker=style["marker"],
+                    s=90,
+                    zorder=3,
+                    label=f"{jobplan} ({details['months']} months)"
+                )
+
+            legend_rows = 3
+
+            legend_columns = (
+                len(jobplans_by_frequency) + legend_rows - 1
+            ) // legend_rows
+
+            axis.legend(
+                loc="upper center",
+                ncol=legend_columns,
+                frameon=False,
+                fontsize=9,
+                labelcolor=self.accent_colour
+            )
+
+        axis.xaxis.set_major_locator(
+            mdates.MonthLocator(interval=3)
+        )
+
+        axis.xaxis.set_major_formatter(
+            mdates.DateFormatter("%b\n%Y")
+        )
+
+        axis.set_yticks([])
+
+        axis.set_ylim(
+            -0.2,
+            1
+        )
+
+        axis.spines["top"].set_visible(False)
+        axis.spines["right"].set_visible(False)
+        axis.spines["left"].set_visible(False)
+        axis.spines["bottom"].set_visible(False)
+
+        axis.tick_params(
+            axis="x",
+            colors=self.accent_colour,
+            length=0
+        )
+
+        figure.subplots_adjust(
+            left=0.05,
+            right=0.97,
+            top=0.82,
+            bottom=0.18
+        )
+
+        self.timeline_canvas = FigureCanvasTkAgg(
+            figure,
+            master=self.content_frame
+        )
+
+        self.timeline_canvas.draw()
+
+        canvas_widget = self.timeline_canvas.get_tk_widget()
+
+        canvas_widget.configure(
+            bg=self.bg_colour,
+            highlightthickness=0,
+            borderwidth=0
+        )
+
+        canvas_widget.pack(
+            fill="both",
+            expand=True,
+            padx=30,
+            pady=(0, 30)
         )
 
     def next_question(self):
