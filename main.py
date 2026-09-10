@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog
 from datetime import datetime
 import ctypes
 import sys
@@ -22,7 +22,12 @@ from pm_logic import (
     get_base_frequency,
     score_for_attempt
 )
-from storage import save_attempt
+from storage import (
+    save_attempt,
+    load_results,
+    load_timeline_entries,
+    export_results
+)
 
 if sys.platform == "win32":
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -77,6 +82,8 @@ class QuizApp(tk.Tk):
                 ctypes.byref(value),
                 ctypes.sizeof(value)
             )
+
+        self.configure_treeview_style()
 
         self.build_landing_screen()
 
@@ -169,6 +176,55 @@ class QuizApp(tk.Tk):
         )
 
         return button
+
+    def configure_treeview_style(self):
+        style = ttk.Style(self)
+
+        # "clam" is a pure-Tk theme, unlike Windows' native "vista" theme,
+        # which ignores custom Treeview colours - needed for the palette
+        # below to actually take effect.
+        style.theme_use("clam")
+
+        style.configure(
+            "App.Treeview",
+            background=self.bg_colour,
+            fieldbackground=self.bg_colour,
+            foreground=self.accent_colour,
+            font=self.instruction_font,
+            rowheight=32,
+            borderwidth=0,
+            relief="flat"
+        )
+
+        style.map(
+            "App.Treeview",
+            background=[("selected", self.active_colour)],
+            foreground=[("selected", self.bg_colour)]
+        )
+
+        style.configure(
+            "App.Treeview.Heading",
+            background=self.connected_colour,
+            foreground=self.accent_colour,
+            font=self.instruction_bold_font,
+            relief="flat",
+            borderwidth=0
+        )
+
+        style.map(
+            "App.Treeview.Heading",
+            background=[("active", self.connected_colour)]
+        )
+
+        style.layout(
+            "App.Treeview",
+            [
+                (
+                    "Treeview.treearea",
+                    {"sticky": "nswe"}
+                )
+            ]
+        )
 
     def build_landing_screen(self):
         self.reset_screen()
@@ -795,7 +851,25 @@ class QuizApp(tk.Tk):
             anchor="w"
         )
 
-        timeline_start = self.correct_due_date
+        self.render_timeline_chart(
+            self.content_frame,
+            question["last_completed"],
+            question["start_counter"],
+            question["sequence"],
+            self.correct_due_date
+        )
+
+    def render_timeline_chart(
+        self,
+        parent_frame,
+        last_completed,
+        start_counter,
+        sequence,
+        correct_due_date
+    ):
+        base_frequency = get_base_frequency(sequence)
+
+        timeline_start = correct_due_date
 
         timeline_end = calculate_next_due_date(
             timeline_start,
@@ -803,13 +877,13 @@ class QuizApp(tk.Tk):
         )
 
         timeline_span = (
-            24 // self.base_frequency
+            24 // base_frequency
         ) + 1
 
         timeline = generate_timeline(
-            question["start_counter"],
-            question["last_completed"],
-            question["sequence"],
+            start_counter,
+            last_completed,
+            sequence,
             timeline_span
         )
 
@@ -819,7 +893,7 @@ class QuizApp(tk.Tk):
         ]
 
         jobplans_by_frequency = sorted(
-            question["sequence"].items(),
+            sequence.items(),
             key=lambda entry: entry[1]["months"]
         )
 
@@ -929,14 +1003,14 @@ class QuizApp(tk.Tk):
             bottom=0.18
         )
 
-        self.timeline_canvas = FigureCanvasTkAgg(
+        canvas = FigureCanvasTkAgg(
             figure,
-            master=self.content_frame
+            master=parent_frame
         )
 
-        self.timeline_canvas.draw()
+        canvas.draw()
 
-        canvas_widget = self.timeline_canvas.get_tk_widget()
+        canvas_widget = canvas.get_tk_widget()
 
         canvas_widget.configure(
             bg=self.bg_colour,
@@ -950,6 +1024,8 @@ class QuizApp(tk.Tk):
             padx=30,
             pady=(0, 30)
         )
+
+        return canvas
 
     def next_question(self):
         if self.current_question_index < len(self.questions) - 1:
@@ -1031,6 +1107,318 @@ class QuizApp(tk.Tk):
 
     def build_leaderboard_screen(self):
         self.reset_screen()
+
+        self.create_menu_button(
+            "Back",
+            self.build_landing_screen,
+            pady=(0, 30),
+            side="bottom"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text="Leaderboard",
+            font=self.title_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(30, 10),
+            anchor="w"
+        )
+
+        results = load_results()
+
+        if not results:
+            tk.Label(
+                self.content_frame,
+                text="No attempts recorded yet.",
+                font=self.instruction_font,
+                bg=self.bg_colour,
+                fg=self.accent_colour
+            ).pack(
+                padx=30,
+                pady=(10, 0),
+                anchor="w"
+            )
+
+            return
+
+        self.create_menu_button(
+            "Export History",
+            self.export_leaderboard_history,
+            pady=(30, 0)
+        )
+
+        tk.Label(
+            self.content_frame,
+            text="Select an attempt to review its questions.",
+            font=self.instruction_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(0, 10),
+            anchor="w"
+        )
+
+        self.export_status_label = tk.Label(
+            self.content_frame,
+            text="",
+            font=self.instruction_font,
+            bg=self.bg_colour,
+            fg=self.correct_colour,
+            wraplength=900,
+            justify="left",
+            anchor="w"
+        )
+
+        self.export_status_label.pack(
+            padx=30,
+            pady=(0, 10),
+            anchor="w"
+        )
+
+        ranked = sorted(
+            results,
+            key=lambda result: (
+                -result["total_score"],
+                -result["attempt_started"].timestamp()
+            )
+        )[:10]
+
+        rows = [
+            (
+                (
+                    str(index),
+                    result["player_name"],
+                    f"{result['total_score']} / 30",
+                    result["attempt_started"].strftime("%d/%m/%Y %H:%M")
+                ),
+                result
+            )
+            for index, result in enumerate(ranked, start=1)
+        ]
+
+        self.build_row_table(
+            self.content_frame,
+            (
+                ("Rank", 6, "center"),
+                ("Player", 28, "w"),
+                ("Score", 10, "center"),
+                ("Date", 20, "center")
+            ),
+            rows,
+            self.build_leaderboard_attempt_screen
+        )
+
+    def export_leaderboard_history(self):
+        destination_path = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV files", "*.csv")]
+        )
+
+        if not destination_path:
+            return
+
+        exported, message = export_results(destination_path)
+
+        if exported:
+            self.export_status_label.config(
+                text=f"Export successful: saved to {destination_path}",
+                fg=self.correct_colour
+            )
+        else:
+            self.export_status_label.config(
+                text=f"Export failed: {message}",
+                fg=self.error_colour
+            )
+
+    def build_row_table(self, parent_frame, columns, rows, on_row_click):
+        table_frame = tk.Frame(
+            parent_frame,
+            bg=self.bg_colour,
+            highlightbackground=self.connected_colour,
+            highlightthickness=1,
+            padx=15,
+            pady=15
+        )
+
+        table_frame.pack(
+            padx=30,
+            pady=(0, 20),
+            anchor="w"
+        )
+
+        column_ids = [
+            str(index)
+            for index in range(len(columns))
+        ]
+
+        tree = ttk.Treeview(
+            table_frame,
+            columns=column_ids,
+            show="headings",
+            height=min(len(rows), 10),
+            style="App.Treeview"
+        )
+
+        for column_id, (heading, width, anchor) in zip(column_ids, columns):
+            tree.heading(column_id, text=heading)
+
+            tree.column(
+                column_id,
+                width=max(60, width * 11),
+                anchor=anchor
+            )
+
+        row_lookup = {}
+
+        for row_index, (row_values, row_data) in enumerate(rows):
+            iid = str(row_index)
+
+            row_lookup[iid] = row_data
+
+            tree.insert(
+                "",
+                "end",
+                iid=iid,
+                values=row_values
+            )
+
+        tree.pack(
+            fill="both",
+            expand=True
+        )
+
+        tree.bind(
+            "<<TreeviewSelect>>",
+            lambda event: self.handle_row_table_select(
+                event,
+                row_lookup,
+                on_row_click
+            )
+        )
+
+    def handle_row_table_select(self, event, row_lookup, on_row_click):
+        selection = event.widget.selection()
+
+        if not selection:
+            return
+
+        on_row_click(row_lookup[selection[0]])
+
+    def build_leaderboard_attempt_screen(self, result):
+        self.reset_screen()
+
+        self.create_menu_button(
+            "Back",
+            self.build_leaderboard_screen,
+            pady=(0, 30),
+            side="bottom"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text=f"{result['player_name']} - {result['total_score']} / 30",
+            font=self.title_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(30, 10),
+            anchor="w"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text="Select a question to view its timeline.",
+            font=self.instruction_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(0, 10),
+            anchor="w"
+        )
+
+        entries = [
+            entry
+            for entry in load_timeline_entries()
+            if entry["game_id"] == result["game_id"]
+        ]
+
+        entries.sort(key=lambda entry: entry["question_number"])
+
+        rows = [
+            (
+                (
+                    str(entry["question_number"]),
+                    entry["asset_name"],
+                    "Correct" if entry["correct"] else "Incorrect",
+                    str(entry["score"])
+                ),
+                entry
+            )
+            for entry in entries
+        ]
+
+        self.build_row_table(
+            self.content_frame,
+            (
+                ("Q#", 6, "center"),
+                ("Asset", 28, "w"),
+                ("Result", 14, "center"),
+                ("Score", 10, "center")
+            ),
+            rows,
+            lambda entry: self.build_leaderboard_question_screen(result, entry)
+        )
+
+    def build_leaderboard_question_screen(self, result, entry):
+        self.reset_screen()
+
+        self.create_menu_button(
+            "Back",
+            lambda: self.build_leaderboard_attempt_screen(result),
+            pady=(0, 30),
+            side="bottom"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text=(
+                f"{result['player_name']} - Question "
+                f"{entry['question_number']} - Correct PM Timeline"
+            ),
+            font=self.title_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(30, 5),
+            anchor="w"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text=f"Asset: {entry['asset_name']}    PM: {entry['pm_id']}",
+            font=self.instruction_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(0, 20),
+            anchor="w"
+        )
+
+        self.render_timeline_chart(
+            self.content_frame,
+            entry["last_completed"],
+            entry["start_counter"],
+            entry["sequence"],
+            entry["correct_due_date"]
+        )
 
     def start_quiz(self):
         name = self.name_entry.get()

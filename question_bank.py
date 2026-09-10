@@ -42,7 +42,6 @@ def create_sequence(jobplan_id, frequencies):
     base_frequency = min(frequencies)
 
     for months in frequencies:
-
         if months % base_frequency != 0:
             raise ValueError(
                 f"{months} is not a multiple of {base_frequency}"
@@ -169,7 +168,6 @@ def generate_question_bank(
     questions = []
 
     for i in range(number_of_questions):
-
         question = generate_question(
             rng,
             asset_number=int(asset_numbers[i]),

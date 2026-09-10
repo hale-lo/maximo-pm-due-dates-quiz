@@ -7,7 +7,6 @@ from validators import (
 )
 
 class TestValidators(unittest.TestCase):
-    
     def test_validate_name_valid(self):
         self.assertEqual(
             validate_name("Yui Hale"),

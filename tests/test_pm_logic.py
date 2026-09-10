@@ -9,7 +9,6 @@ from pm_logic import (
 
 class PMLogicTest(unittest.TestCase):
     def test_resolve_job_plan(self):
-
         sequence_entries = {
             "JP114301M": {
                 "interval": 1,
@@ -22,12 +21,11 @@ class PMLogicTest(unittest.TestCase):
         }
 
         self.assertEqual(
-            resolve_job_plan(5, sequence_entries), 
+            resolve_job_plan(5, sequence_entries),
             "JP114301M"
         )
 
     def test_resolve_job_plan_largest(self):
-
         sequence_entries = {
             "JP114301M": {
                 "interval": 1,
@@ -46,24 +44,23 @@ class PMLogicTest(unittest.TestCase):
 
     def test_calculate_next_due_date(self):
         self.assertEqual(
-            calculate_next_due_date(date(2026, 1, 30), 6), 
+            calculate_next_due_date(date(2026, 1, 30), 6),
             date(2026, 7, 30)
         )
 
     def test_calculate_next_due_date_leap_year(self):
         self.assertEqual(
-            calculate_next_due_date(date(2028, 1, 31), 1), 
+            calculate_next_due_date(date(2028, 1, 31), 1),
             date(2028, 2, 29)
         )
 
-    def test_calculate_next_due_date_december_boundry(self):
+    def test_calculate_next_due_date_december_boundary(self):
         self.assertEqual(
-            calculate_next_due_date(date(2026, 1, 31), 11), 
+            calculate_next_due_date(date(2026, 1, 31), 11),
             date(2026, 12, 31)
         )
 
     def test_generate_timeline(self):
-
         sequence_entries = {
             "JP114301M": {
                 "interval": 1,
@@ -159,4 +156,4 @@ class PMLogicTest(unittest.TestCase):
         self.assertEqual(
             score_for_attempt(3, False),
             0
-    )
+        )
