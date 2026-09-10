@@ -21,7 +21,12 @@ def validate_frequency(frequency_text, valid):
     if not frequency_text:
         return False, "Frequency cannot be empty"
 
-    if int(frequency_text) not in valid:
+    try:
+        frequency = int(frequency_text)
+    except ValueError:
+        return False, "Frequency must be a whole number"
+
+    if frequency not in valid:
         return False, "Frequency is not valid"
 
     return True, ""

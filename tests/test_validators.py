@@ -54,3 +54,9 @@ class TestValidators(unittest.TestCase):
             validate_frequency(5, [1, 2, 3, 6, 12, 24, 60]),
             (False, "Frequency is not valid")
         )
+
+    def test_validate_frequency_not_a_number(self):
+        self.assertEqual(
+            validate_frequency("abc", [1, 2, 3, 6, 12, 24, 60]),
+            (False, "Frequency must be a whole number")
+        )

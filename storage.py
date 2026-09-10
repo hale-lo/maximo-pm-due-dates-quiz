@@ -88,8 +88,12 @@ def load_results():
             results = []
 
             for row in reader:
-                row["total_score"] = int(row["total_score"])
-                row["attempt_started"] = datetime.fromisoformat(row["attempt_started"])
+                try:
+                    row["total_score"] = int(row["total_score"])
+                    row["attempt_started"] = datetime.fromisoformat(row["attempt_started"])
+                except (KeyError, TypeError, ValueError) as error:
+                    print(f"Skipping corrupted row in {RESULTS_FILE}: {error}")
+                    continue
 
                 results.append(row)
 
@@ -106,17 +110,21 @@ def load_timeline_entries():
             entries = []
 
             for row in reader:
-                row["question_number"] = int(row["question_number"])
-                row["correct"] = row["correct"] == "True"
-                row["score"] = int(row["score"])
-                row["attempts"] = int(row["attempts"])
-                row["correct_frequency"] = int(row["correct_frequency"])
-                row["submitted_frequency"] = int(row["submitted_frequency"])
-                row["start_counter"] = int(row["start_counter"])
-                row["sequence"] = json.loads(row["sequence"])
-                row["correct_due_date"] = datetime.strptime(row["correct_due_date"], "%d/%m/%Y").date()
-                row["submitted_due_date"] = datetime.strptime(row["submitted_due_date"], "%d/%m/%Y").date()
-                row["last_completed"] = datetime.strptime(row["last_completed"], "%d/%m/%Y").date()
+                try:
+                    row["question_number"] = int(row["question_number"])
+                    row["correct"] = row["correct"] == "True"
+                    row["score"] = int(row["score"])
+                    row["attempts"] = int(row["attempts"])
+                    row["correct_frequency"] = int(row["correct_frequency"])
+                    row["submitted_frequency"] = int(row["submitted_frequency"])
+                    row["start_counter"] = int(row["start_counter"])
+                    row["sequence"] = json.loads(row["sequence"])
+                    row["correct_due_date"] = datetime.strptime(row["correct_due_date"], "%d/%m/%Y").date()
+                    row["submitted_due_date"] = datetime.strptime(row["submitted_due_date"], "%d/%m/%Y").date()
+                    row["last_completed"] = datetime.strptime(row["last_completed"], "%d/%m/%Y").date()
+                except (KeyError, TypeError, ValueError) as error:
+                    print(f"Skipping corrupted row in {TIMELINE_FILE}: {error}")
+                    continue
 
                 entries.append(row)
 

@@ -4,10 +4,11 @@
 
 - [Introduction](#introduction)
 - [Design](#design)
-    - [GUI Prototype](#design-gui-prototype)
-    - [Functional Requirements](#design-functional-requirements)
-    - [Non-Functional Requirements](#design-non-functional-requirements)
-
+    - [GUI Prototype](#gui-prototype)
+    - [Functional Requirements](#functional-requirements)
+    - [Non-Functional Requirements](#non-functional-requirements)
+    - [Tech Stack](#tech-stack)
+    - [Code Design](#code-design)
 - [Development](#development)
 - [Testing](#testing)
 - [Documentation](#documentation)
@@ -26,7 +27,7 @@ To address this knowledge gap, this Tkinter application lets users learn how Pre
 This quiz is aimed at users who will interact with Preventive Maintenance data through the front end (clients or internal users) or through database and MIF loading. With higher training and knowledge among both our clients and the individuals implementing the data design, MACS EU can support a more logical workflow and communicate requirements for the Preventive Maintenance application more clearly to clients.
 
 ## Design
-### Design: GUI Prototype
+### GUI Prototype
 
 The GUI and user journey were both generated in Figma, as a clickable prototype which covers the full user journey. I generated a Lo-Fi diagram in greyscale, deliberately keeping it sketch-style rather than a full deployment view, to allow for a more deliberate design style to be outlined later.
 
@@ -143,6 +144,65 @@ On the Questions frame, it will display the list of 10 questions which were aske
 **Figure 13**: Leaderboard question timeline frame of the Maximo PM Due Date Quiz Figma prototype.
 
 The final frame of this Treeview displays the timeline of the question selected on the prior frame (Figure 12). It takes the data from a saved CSV and displays it alongside a legend informing the user of which Job Plans and Frequencies the points relate to. The "Back" button on this frame will take the user back to the Questions frame (Figure 12) for the previously selected question.
+
+### Functional Requirements
+
+Table 1: Functional requirements for the Maximo PM Due Date Quiz.
+| ID | Requirement |
+|---|---|
+| FR1 | The application must provide a landing page with options to start a new quiz or view the Leaderboard/History page. |
+| FR2 | The application must require a valid name on the Player Details page before a quiz can begin, with visible feedback on invalid input. |
+| FR3 | On Retake Quiz, the application must pre-fill the name field with the previous player's name, editable before the new attempt starts. |
+| FR4 | The application must let the user submit a next due date and a frequency selected from the question's valid job-plan-sequence frequencies. |
+| FR5 | The application must display each question's last-completed date, counter value, and defined intervals and frequencies. |
+| FR6 | The application must mark an answer correct only on an exact match of frequency and due date, allow up to three attempts, and complete the question on a correct answer or after three attempts. |
+| FR7 | The application must list each incorrect guess (date and frequency), kept visible until the next question begins. |
+| FR8 | The application must plot each incorrect guessed date on the timeline, clearing the markers when the next question begins. |
+| FR9 | On question completion, the application must reveal the correct frequency, due date, and a calculated PM timeline of further occurrences. |
+| FR10 | The application must score each question 3/2/1/0 points by attempt number (first, second, third, or none correct). |
+| FR11 | The application must disable inputs on question completion, showing "Next Question" for questions 1-9 and "View Results" after question 10. |
+| FR12 | The application must persist the completed attempt (name, score, timeline data) before showing the Results page. |
+| FR13 | The Results page must show the player's name and score, with "View Leaderboard", "Retake Quiz", and "Return Home" actions. |
+| FR14 | The application must display the top 10 stored attempts by score on the Leaderboard/History page, ties broken by recency. |
+| FR15 | The user must be able to select an attempt and a question from the Leaderboard to view its timeline, replacing any timeline shown. |
+| FR16 | The application must provide an "Export History" action to export the full attempt summary history to a chosen location. |
+| FR17 | The application must provide a "Return Home" action on the Leaderboard/History page. |
+| FR18 | The application must validate the due date before evaluating the answer; invalid input shows feedback and does not count as an attempt. |
+| FR19 | Each attempt must consist of exactly 10 questions, ending at Results after the tenth. |
+| FR20 | The application must catch read, write, and export errors without crashing, showing clear feedback and never falsely indicating success. |
+
+### Non-Functional Requirements
+
+Table 2: Non-Functional requirements for the Maximo PM Due Date Quiz.
+| ID | Requirement |
+|---|---|
+| NFR1 | With up to 100 stored attempts, user actions (answering, advancing, loading the Leaderboard, exporting) must respond within 1 second. |
+| NFR2 | At a 1200x800 window size, all primary controls must be usable without resizing, including all Quiz page elements at once. |
+| NFR3 | Body text must be at least 11pt with a 4.5:1 contrast ratio, and colour-coded states must also use a non-colour cue. |
+| NFR4 | On a clean setup following the README instructions, the application must launch to the Landing page within 3 seconds with no pre-existing CSV files required. |
+
+### Tech Stack
+
+Table 3: Tech stack used in the Maximo PM Due Date Quiz.
+
+| Component | Choice | Why |
+|---|---|---|
+| Language | Python 3.12 | Brief has a Python 3.9+ minimum, and the newer version let me use structural pattern matching (`match`/`case`) for the scoring logic instead of a chain of if/elif statements. |
+| GUI framework | Tkinter, with `ttk` for the themed widgets | Studied in the course, and it needed nothing to host or deploy which benefits MACS EU for more available usage. |
+| Data visualisation | Matplotlib | Draws the PM timeline straight inside the Tkinter window, no need to leave the app to see the result. |
+| Synthetic data generation | NumPy | Studied in course and generates the randomised asset, PM and job-plan-sequence data behind each question. |
+| Persistent storage | CSV | As using a desktop app can meets the storage requirement without a database, and can use mutliple files with key ids for relationships. |
+| Automated testing | `unittest` | Comes with Python, no extra dependency for CI to manage, and it's what the course teaches. |
+| Continuous integration | GitHub Actions | Runs the test suite on every push and pull from GitHub |
+| Prototyping | Figma | Used to build GUI Prototype, evidenced earlier in design. |
+
+### Code Design
+
+The application is built around three classes: `QuizApp`, `Attempt`, and `Question`. I kept this small, following prior advice not to overcomplicate the design. `QuizApp` inherits from `tk.Tk`. Everything else is built through composition instead. `Attempt` and `Question` are plain dataclasses holding data only, with no behaviour of their own. The scoring, timeline, and due-date logic all live separately in `pm_logic.py`, so that logic can be unit tested without needing the GUI. The relationship between the three classes is shown below in Figure 14.
+
+![Class diagram](draw.io/class-diagram.png)
+
+**Figure 14**: Class diagram of the Maximo PM Due Date Quiz, showing QuizApp, Attempt, and Question.
 
 ## Development
 
