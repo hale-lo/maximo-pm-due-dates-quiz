@@ -47,7 +47,10 @@ JOBPLAN_COLOURS = [
 JOBPLAN_MARKERS = ["o", "s", "^", "D", "v", "P", "X", "*"]
 
 class QuizApp(tk.Tk):
+    """The whole quiz app. One window, one class, screens swapped in and out as the player moves through it."""
+
     def __init__(self):
+        """Set up the window, fonts, colours and Treeview style, then show the landing screen."""
         super().__init__()
 
         self.title("Quiz - Maximo - PM Due Dates")
@@ -86,10 +89,12 @@ class QuizApp(tk.Tk):
         self.build_landing_screen()
 
     def empty_screen(self):
+        """Destroy every widget in the window, so the next screen starts from a blank slate."""
         for widget in self.winfo_children():
             widget.destroy()
 
     def reset_screen(self):
+        """Clear the window and rebuild the sidebar and content frame shared by every screen."""
         self.empty_screen()
 
         self.configure(bg=self.bg_colour)
@@ -133,6 +138,7 @@ class QuizApp(tk.Tk):
         self.build_content_header()
 
     def build_content_header(self):
+        """Add the ": PM Due Dates" strip that sits at the top of the content area on every screen."""
         tk.Label(
             self.content_frame,
             text=": PM Due Dates",
@@ -152,6 +158,11 @@ class QuizApp(tk.Tk):
         pady=(10, 0),
         side="top"
     ):
+        """Add one of the dark sidebar buttons to the menu frame and return it.
+
+        Used for every button in the app, so the styling stays
+        consistent without repeating it everywhere.
+        """
         button = tk.Button(
             self.menu_frame,
             text=text,
@@ -176,6 +187,12 @@ class QuizApp(tk.Tk):
         return button
 
     def configure_treeview_style(self):
+        """Set up the Treeview colours and layout.
+
+        Switches the ttk theme to "clam" first, since Windows'
+        default "vista" theme ignores custom Treeview colours and
+        the leaderboard tables would just come out grey.
+        """
         style = ttk.Style(self)
 
         style.theme_use("clam")
@@ -222,6 +239,7 @@ class QuizApp(tk.Tk):
         )
 
     def build_landing_screen(self):
+        """Show the home screen: Start Quiz, View Leaderboard, and the instructions."""
         self.reset_screen()
 
         self.create_menu_button(
@@ -290,6 +308,11 @@ class QuizApp(tk.Tk):
         )
 
     def build_name_screen(self, retake=False):
+        """Show the name entry screen.
+
+        Pass retake=True when coming from the results screen, so
+        the field prefills with whoever just played.
+        """
         self.reset_screen()
 
         self.create_menu_button(
@@ -359,6 +382,11 @@ class QuizApp(tk.Tk):
         )
 
     def build_quiz_screen(self):
+        """Show the current question, work out the correct answer, and set up the answer form.
+
+        Reads self.current_question, so start_quiz or next_question
+        needs to set that before calling this.
+        """
         self.reset_screen()
 
         question = self.current_question
@@ -643,6 +671,12 @@ class QuizApp(tk.Tk):
             )
 
     def submit_answer(self):
+        """Validate and mark the player's answer.
+
+        Correct answers or a third wrong attempt both call
+        complete_question. Otherwise the guess gets logged in the
+        sidebar and the player can try again.
+        """
         due_date_text = self.date_entry.get()
         frequency_text = self.frequency_var.get()
 
@@ -728,6 +762,7 @@ class QuizApp(tk.Tk):
                 )
 
     def complete_question(self, message, colour, correct):
+        """Score the question, record the result, lock the answer form, and show the correct PM timeline."""
         score = score_for_attempt(self.attempts, correct)
         self.attempt.total_score += score
 
@@ -812,6 +847,7 @@ class QuizApp(tk.Tk):
         )
 
     def build_timeline_screen(self):
+        """Swap the content area over to the correct PM timeline chart for the current question."""
         question = self.current_question
 
         for widget in self.content_frame.winfo_children():
@@ -862,6 +898,14 @@ class QuizApp(tk.Tk):
         sequence,
         correct_due_date
     ):
+        """Draw a two-year PM timeline chart and pack it into parent_frame.
+
+        Used both for the current question's timeline and for
+        reviewing a past question from the leaderboard, which is
+        why last_completed, start_counter, sequence and
+        correct_due_date all get passed in rather than read off
+        self.
+        """
         base_frequency = get_base_frequency(sequence)
 
         timeline_start = correct_due_date
@@ -1023,6 +1067,7 @@ class QuizApp(tk.Tk):
         return canvas
 
     def next_question(self):
+        """Move to the next question, or save the attempt and show results if that was the last one."""
         if self.current_question_index < len(self.questions) - 1:
             self.current_question_index += 1
             self.current_question = self.questions[self.current_question_index]
@@ -1040,6 +1085,7 @@ class QuizApp(tk.Tk):
                 )
 
     def build_results_screen(self):
+        """Show the final score screen with links to the leaderboard, a retake, or home."""
         self.reset_screen()
 
         self.create_menu_button(
@@ -1095,6 +1141,7 @@ class QuizApp(tk.Tk):
         )
 
     def build_leaderboard_screen(self):
+        """Show the top 10 attempts, or a placeholder if nobody's played yet."""
         self.reset_screen()
 
         self.create_menu_button(
@@ -1202,6 +1249,10 @@ class QuizApp(tk.Tk):
         )
 
     def export_leaderboard_history(self):
+        """Ask where to save a CSV copy of results.csv, then export it there.
+
+        Does nothing if the save dialog gets cancelled.
+        """
         destination_path = filedialog.asksaveasfilename(
             defaultextension=".csv",
             filetypes=[("CSV files", "*.csv")]
@@ -1224,6 +1275,13 @@ class QuizApp(tk.Tk):
             )
 
     def build_row_table(self, parent_frame, columns, rows, on_row_click):
+        """Build a styled Treeview table and wire up row clicks.
+
+        columns is a list of (heading, width, anchor) tuples, rows
+        is a list of (display_values, row_data) tuples. on_row_click
+        gets called with the row_data for whichever row the player
+        clicks.
+        """
         table_frame = tk.Frame(
             parent_frame,
             bg=self.bg_colour,
@@ -1290,6 +1348,11 @@ class QuizApp(tk.Tk):
         )
 
     def handle_row_table_select(self, event, row_lookup, on_row_click):
+        """Look up the clicked row's data and pass it on to on_row_click.
+
+        Bound to a Treeview's <<TreeviewSelect>> event by
+        build_row_table.
+        """
         selection = event.widget.selection()
 
         if not selection:
@@ -1298,6 +1361,7 @@ class QuizApp(tk.Tk):
         on_row_click(row_lookup[selection[0]])
 
     def build_leaderboard_attempt_screen(self, result):
+        """Show every question from one leaderboard attempt, result is one row from load_results()."""
         self.reset_screen()
 
         self.create_menu_button(
@@ -1365,6 +1429,7 @@ class QuizApp(tk.Tk):
         )
 
     def build_leaderboard_question_screen(self, result, entry):
+        """Show the PM timeline for one past question, entry is one row from load_timeline_entries()."""
         self.reset_screen()
 
         self.create_menu_button(
@@ -1410,6 +1475,7 @@ class QuizApp(tk.Tk):
         )
 
     def start_quiz(self):
+        """Validate the name, generate a fresh question bank, and start a new Attempt."""
         name = self.name_entry.get()
 
         valid, message = validate_name(name)

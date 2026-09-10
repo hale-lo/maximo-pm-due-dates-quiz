@@ -4,6 +4,7 @@ import numpy as np
 
 @dataclass
 class Question:
+    """One quiz question: an asset, its PM job plan sequence, and where its counter starts."""
     asset_name: str
     pm_id: str
     sequence: dict
@@ -37,6 +38,7 @@ def create_question(
     last_completed,
     start_counter
 ):
+    """Build a Question from its parts. Just a thin wrapper around the constructor."""
     return Question(
         asset_name=asset_name,
         pm_id=pm_id,
@@ -46,6 +48,12 @@ def create_question(
     )
 
 def create_sequence(jobplan_id, frequencies):
+    """Turn a list of frequencies into a job plan sequence dict.
+
+    Each frequency gets its own job plan ID and an interval relative
+    to the shortest frequency in the list. Raises ValueError if a
+    frequency isn't a clean multiple of the shortest one.
+    """
     sequence = {}
 
     base_frequency = min(frequencies)
@@ -69,11 +77,17 @@ def create_sequence(jobplan_id, frequencies):
     return sequence
 
 def generate_asset_name(rng, asset_number):
+    """Pick a random asset type and stick the asset number on the end."""
     asset_type = rng.choice(ASSET_TYPES)
 
     return f"{asset_type}-{asset_number}"
 
 def generate_frequencies(rng):
+    """Pick a random base frequency plus a few compatible ones on top of it.
+
+    Compatible just means "divides evenly by the base frequency", so
+    they can all share one job plan sequence.
+    """
     possible_base_frequencies = [1, 2, 3, 6, 12]
 
     base_frequency = int(
@@ -109,6 +123,7 @@ def generate_frequencies(rng):
     return frequencies
 
 def generate_last_completed(rng):
+    """Pick a random last-completed date between 2020 and 2025."""
     year = int(rng.integers(2020, 2026))
     month = int(rng.integers(1, 13))
     day = int(rng.integers(1, 29))
@@ -116,6 +131,7 @@ def generate_last_completed(rng):
     return date(year, month, day)
 
 def generate_start_counter(rng):
+    """Pick a random starting counter value for the asset."""
     return int(rng.integers(0, 120))
 
 def generate_question(
@@ -124,6 +140,7 @@ def generate_question(
     pm_number,
     jobplan_number
 ):
+    """Generate one full random question from the given ID numbers."""
     asset_name = generate_asset_name(
         rng,
         asset_number
@@ -154,6 +171,11 @@ def generate_question_bank(
     number_of_questions=10,
     seed=None
 ):
+    """Generate a bank of random questions with unique assets, PM IDs and job plan IDs.
+
+    Pass a seed to get the same bank back every time, which is what
+    the tests do.
+    """
     rng = np.random.default_rng(seed)
 
     asset_numbers = rng.choice(

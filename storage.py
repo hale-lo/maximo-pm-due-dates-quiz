@@ -7,6 +7,7 @@ from datetime import datetime
 
 @dataclass
 class Attempt:
+    """One full quiz playthrough: who played, when, and how it went."""
     player_name: str
     game_id: str
     attempt_started: datetime
@@ -41,6 +42,11 @@ TIMELINE_FIELDNAMES = [
 ]
 
 def save_attempt(attempt):
+    """Append an Attempt to results.csv and its questions to timeline_entries.csv.
+
+    Returns a (success, message) tuple rather than raising, so the
+    caller can show the user a friendly error if the write fails.
+    """
     try:
         _append_row(
             RESULTS_FILE,
@@ -81,6 +87,12 @@ def save_attempt(attempt):
         return False, f"Could not save results: {error}"
 
 def load_results():
+    """Load every saved attempt from results.csv.
+
+    Returns an empty list if the file doesn't exist yet. Any row
+    that fails to parse (a corrupted or partially-written line) gets
+    skipped and logged rather than blowing up the whole load.
+    """
     try:
         with open(RESULTS_FILE, mode="r", newline="") as file:
             reader = csv.DictReader(file)
@@ -103,6 +115,12 @@ def load_results():
         return []
 
 def load_timeline_entries():
+    """Load every saved question result from timeline_entries.csv.
+
+    Same deal as load_results: missing file returns an empty list,
+    and a corrupted row gets skipped and logged rather than
+    crashing the load.
+    """
     try:
         with open(TIMELINE_FILE, mode="r", newline="") as file:
             reader = csv.DictReader(file)
@@ -134,6 +152,10 @@ def load_timeline_entries():
         return []
 
 def export_results(destination_path):
+    """Copy results.csv to wherever the user picked in the save dialog.
+
+    Returns a (success, message) tuple, same as save_attempt.
+    """
     try:
         shutil.copyfile(RESULTS_FILE, destination_path)
 
@@ -143,6 +165,7 @@ def export_results(destination_path):
         return False, f"Could not export results: {error}"
 
 def _append_row(filename, fieldnames, row):
+    """Append one row to a CSV, writing the header first if the file is new."""
     file_exists = os.path.isfile(filename)
 
     with open(filename, mode="a", newline="") as file:

@@ -11,6 +11,10 @@
     - [Code Design](#code-design)
 - [Development](#development)
 - [Testing](#testing)
+    - [Testing Strategy and Methodology](#testing-strategy-and-methodology)
+    - [Unit Testing Outcomes](#unit-testing-outcomes)
+    - [Continuous Integration](#continuous-integration)
+    - [Manual Testing Outcomes](#manual-testing-outcomes)
 - [Documentation](#documentation)
 - [Evaluation](#evaluation)
 
@@ -56,16 +60,14 @@ The User Details frame (Figure 2) holds an open text field for the user to type 
 
 **Figure 3**: User Details frame with error of the Maximo PM Due Date Quiz Figma prototype.
 
-When a user incorrectly enters their name, an error message will appear below the text box informing them of their mistake and requesting a name. Once a correct name is input, the user can click "Continue" to proceed to the first question of the quiz (Figure 4).
-
 ##### Quiz Frame - Question One
 ![Quiz frame question one prototype](figma/question_first.png)
 
 **Figure 4**: Quiz frame of the Maximo PM Due Date Quiz Figma prototype.
 
-When a user loads the quiz frame it will generate synthetic Asset, PM and Job Plan data for the question, including a Last Completed date, Current PM Counter, and Job Plan Intervals and Frequencies. The user will take their knowledge from the introduction and use it to calculate and input a date value into the "Next Due Date" field, followed by an integer in the "Frequency" dropdown on the left side. There is only one action from this frame, but it has multiple outputs:
+When a user loads the quiz frame it will generate synthetic Asset, PM and Job Plan data for the question, including a Last Completed date, Current PM Counter, and Job Plan Intervals and Frequencies. The user will take their knowledge from the introduction and use it to calculate and input a date value into the "Next Due Date" field, followed by an integer in the "Frequency" dropdown. There is only one action from this frame, but it has multiple outputs:
 1. If there is an incorrect value in either field, an error will occur and display as in Figure 5.
-2. If the answer is wrong, it will display below "Incorrect Guesses" on the left side (Figure 6).
+2. If the answer is wrong, it will display below "Incorrect Guesses" (Figure 6).
 3. If the answer is correct, the user will be taken to the summary timeline (Figure 7).
 
 This is replicated ten times over, once for each randomly generated question.
@@ -75,14 +77,12 @@ This is replicated ten times over, once for each randomly generated question.
 
 **Figure 5**: Quiz frame with invalid value of the Maximo PM Due Date Quiz Figma prototype.
 
-When a user inputs an invalid date or frequency, or doesn't populate either, and then clicks the "Submit" button, an error will display below the two input boxes as in Figure 5. Once a correct value is input, it will proceed to either Figure 6 if incorrect, or the Timeline frame (Figure 7) if correct.
-
 ##### Quiz Frame - Question One - Incorrect
 ![Quiz frame question one with incorrect guess prototype](figma/question_first_incorrect.png)
 
 **Figure 6**: Quiz frame with incorrect guess of the Maximo PM Due Date Quiz Figma prototype.
 
-When an input doesn't exactly match the correct date and frequency, a red set of text will appear below the "Incorrect Guesses" section of the frame, informing the user of their prior guess. The user will get three guesses in total; on a correct guess, or the third incorrect guess, they will be taken to the Timeline frame (Figure 7).
+When an input doesn't exactly match the correct date and frequency, a red set of text will appear below the "Incorrect Guesses" section of the frame, informing the user of their prior guess. The user will get three guesses in total. On a correct guess, or the third incorrect guess, they will be taken to the Timeline frame (Figure 7).
 
 ##### Quiz Frame - Question One - Correct Timeline
 ![Quiz frame question ten prototype](figma/question_first_correct.png)
@@ -96,8 +96,6 @@ Once a user reaches three incorrect guesses, or a single correct guess, they wil
 
 **Figure 8**: Quiz frame question ten of the Maximo PM Due Date Quiz Figma prototype.
 
-Question ten is the final question; once again, the user will get three attempts to correctly conclude the Next Due Date and Frequency. Upon their final submit, be it correct or incorrect, they will once again be directed to the Timeline frame (Figure 9).
-
 ##### Quiz Frame - Question Ten - Correct Timeline
 ![Quiz frame question ten prototype](figma/question_last_correct.png)
 
@@ -110,7 +108,7 @@ This frame is the only quiz frame that has a different action button: on the fin
 
 **Figure 10**: Quiz complete frame of the Maximo PM Due Date Quiz Figma prototype.
 
-The Result frame is a simple frame that brings together some of the data stored across the quiz. Each question is worth 0-3 points, depending on whether the user answered correctly and in how many guesses:
+The Result frame is a simple frame that brings together some of the data stored across the quiz. Each question is worth 0-3 points, depending on how many guesses it took to answer correctly:
 
         1 Guess = 3 Points
         2 Guesses = 2 Points
@@ -129,7 +127,7 @@ Following this, the user has three actions:
 
 **Figure 11**: Leaderboard frame of the Maximo PM Due Date Quiz Figma prototype.
 
-The Leaderboard frame is a table which displays the stored data of previous users, ranking them from first to last, ordered by score and date played. It is part of a three-level Treeview, in which each table is interactive: clicking an entry in the leaderboard will take the user to the Questions frame (Figure 12). There are two other inputs on this frame. The "Export History" button will provide a download of the leaderboard with game information, whilst the "Back" button will return the user to the Landing frame (Figure 1).
+The Leaderboard frame is a table which displays the stored data of previous users, ranking them from first to last, ordered by score and date played. It is part of a three-level Treeview, in which each table is interactive: clicking an entry in the leaderboard will take the user to the Questions frame (Figure 12). The "Export History" button will provide a download of the leaderboard with game information, whilst the "Back" button will return the user to the Landing frame (Figure 1).
 
 ##### Quiz Frame - Leaderboard - Questions
 ![Leaderboard](figma/leaderboard_question-scores.png)
@@ -157,19 +155,16 @@ Table 1: Functional requirements for the Maximo PM Due Date Quiz.
 | FR5 | The application must display each question's last-completed date, counter value, and defined intervals and frequencies. |
 | FR6 | The application must mark an answer correct only on an exact match of frequency and due date, allow up to three attempts, and complete the question on a correct answer or after three attempts. |
 | FR7 | The application must list each incorrect guess (date and frequency), kept visible until the next question begins. |
-| FR8 | The application must plot each incorrect guessed date on the timeline, clearing the markers when the next question begins. |
-| FR9 | On question completion, the application must reveal the correct frequency, due date, and a calculated PM timeline of further occurrences. |
-| FR10 | The application must score each question 3/2/1/0 points by attempt number (first, second, third, or none correct). |
-| FR11 | The application must disable inputs on question completion, showing "Next Question" for questions 1-9 and "View Results" after question 10. |
-| FR12 | The application must persist the completed attempt (name, score, timeline data) before showing the Results page. |
-| FR13 | The Results page must show the player's name and score, with "View Leaderboard", "Retake Quiz", and "Return Home" actions. |
-| FR14 | The application must display the top 10 stored attempts by score on the Leaderboard/History page, ties broken by recency. |
-| FR15 | The user must be able to select an attempt and a question from the Leaderboard to view its timeline, replacing any timeline shown. |
-| FR16 | The application must provide an "Export History" action to export the full attempt summary history to a chosen location. |
-| FR17 | The application must provide a "Return Home" action on the Leaderboard/History page. |
-| FR18 | The application must validate the due date before evaluating the answer; invalid input shows feedback and does not count as an attempt. |
-| FR19 | Each attempt must consist of exactly 10 questions, ending at Results after the tenth. |
-| FR20 | The application must catch read, write, and export errors without crashing, showing clear feedback and never falsely indicating success. |
+| FR8 | On question completion, the application must reveal the correct frequency, due date, and a calculated PM timeline of further occurrences. |
+| FR9 | The application must score each question 3/2/1/0 points by attempt number (first, second, third, or none correct). |
+| FR10 | The application must disable inputs on question completion, showing "Next Question" for questions 1-9 and "View Results" after question 10. |
+| FR11 | The Results page must show the player's name and score, with "View Leaderboard", "Retake Quiz", and "Return Home" actions. |
+| FR12 | The application must display the top 10 stored attempts by score on the Leaderboard/History page, ties broken by recency. |
+| FR13 | The user must be able to select an attempt and a question from the Leaderboard to view its timeline, replacing any timeline shown. |
+| FR14 | The application must provide an "Export History" action to export the full attempt summary history to a chosen location. |
+| FR15 | The application must validate the due date before evaluating the answer, invalid input shows feedback and does not count as an attempt. |
+| FR16 | Each attempt must consist of exactly 10 questions, ending at Results after the tenth. |
+| FR17 | The application must catch read, write, and export errors without crashing, showing clear feedback and never falsely indicating success. |
 
 ### Non-Functional Requirements
 
@@ -177,7 +172,7 @@ Table 2: Non-Functional requirements for the Maximo PM Due Date Quiz.
 | ID | Requirement |
 |---|---|
 | NFR1 | With up to 100 stored attempts, user actions (answering, advancing, loading the Leaderboard, exporting) must respond within 1 second. |
-| NFR2 | At a 1200x800 window size, all primary controls must be usable without resizing, including all Quiz page elements at once. |
+| NFR2 | At a 1440x1024 window size, all primary controls must be usable without resizing, including all Quiz page elements at once. |
 | NFR3 | Body text must be at least 11pt with a 4.5:1 contrast ratio, and colour-coded states must also use a non-colour cue. |
 | NFR4 | On a clean setup following the README instructions, the application must launch to the Landing page within 3 seconds with no pre-existing CSV files required. |
 
@@ -206,11 +201,208 @@ The application is built around three classes: `QuizApp`, `Attempt`, and `Questi
 
 ## Development
 
+For my development I kept the GUI as simplistic as possible, anything which needs to be checked for correctness sits in a pure function separate.
+This is divided up as below:
 
+`main.py` - Handles the `QuizApp` GUI, which manages the display and wiring events to other modules.
+
+`pm_logic.py` - This is a purely calculation logic for due dates, timelines and scoring.
+
+`validators.py` - Runs validation against inputs, runs before inputs get ran through pure logic.
+
+`question_bank.py` - Used for synthetic data generation.
+
+`storage.py` - Reads and writes all the CSV files.
+
+An example of this pure function seperation is `score_for_attempt` in `pm_logic.py`, which converts the attempt number into a score with no alterations on the input data.
+I also used a match/case as I find it cleaner and less repetitive than an else/if chain.
+With the same input it will always return the same output.
+
+```
+def score_for_attempt(attempt_number, correct):
+    if correct:
+        match attempt_number:
+            case 3:
+                return 1
+            case 2:
+                return 2
+            case 1:
+                return 3
+            case _:
+                return 0
+    return 0
+```
+
+The validation in `validators.py` all follow the same style throughout. I implemented it so `validate_frequency` returns a flag and a message, then the GUI can parse that message and display it for the user directly on the screen.
+
+```
+def validate_frequency(frequency_text, valid):
+    if not frequency_text:
+        return False, "Frequency cannot be empty"
+
+    try:
+        frequency = int(frequency_text)
+    except ValueError:
+        return False, "Frequency must be a whole number"
+
+    if frequency not in valid:
+        return False, "Frequency is not valid"
+
+    return True, ""
+```
+
+Whilst in the storage, `load_results` is used to return empty lists and stop crashing, so that any issues inside of the rows can be skipped without causing issues with the rest.
+
+```
+def load_results():
+    try:
+        with open(RESULTS_FILE, mode="r", newline="") as file:
+            reader = csv.DictReader(file)
+
+            results = []
+
+            for row in reader:
+                try:
+                    row["total_score"] = int(row["total_score"])
+                    row["attempt_started"] = datetime.fromisoformat(row["attempt_started"])
+                except (KeyError, TypeError, ValueError) as error:
+                    print(f"Skipping corrupted row in {RESULTS_FILE}: {error}")
+                    continue
+
+                results.append(row)
+
+            return results
+
+    except FileNotFoundError:
+        return []
+```
+
+These three functions stand to prove that the applications core logic is predicatable, holds validation and withstand errors.
+`score_for_attempt` and `validate_frequency` will always return the same results given the same input whilst `load_results` has failsafes to avoid bad rows.
+Then applying this logic outside of the GUI enables it to the testable as displayed next.
 
 ## Testing
 
+### Testing Strategy and Methodology
 
+For testing I focused on unit testing the pure functions, since they don't need the GUI running to test. Manual testing covers the parts that do.
+
+### Unit Testing Outcomes
+
+Before we looked at `score_for_attempt` which is tested against all three successful attempt numbers plus a failure, to prove the whole scoring rule is covered, not just one path through it.
+
+```
+def test_score_for_attempt_success_attempt_1(self):
+    self.assertEqual(score_for_attempt(1, True), 3)
+
+def test_score_for_attempt_success_attempt_2(self):
+    self.assertEqual(score_for_attempt(2, True), 2)
+
+def test_score_for_attempt_success_attempt_3(self):
+    self.assertEqual(score_for_attempt(3, True), 1)
+
+def test_score_for_attempt_fail(self):
+    self.assertEqual(score_for_attempt(3, False), 0)
+```
+
+`validate_frequency` a good display of testing each valid case and the specific outputs including the message, not just pass and fail.
+
+```
+def test_validate_frequency_valid(self):
+    self.assertEqual(
+        validate_frequency(6, [1, 2, 3, 6, 12, 24, 60]),
+        (True, "")
+    )
+
+def test_validate_frequency_invalid(self):
+    self.assertEqual(
+        validate_frequency(5, [1, 2, 3, 6, 12, 24, 60]),
+        (False, "Frequency is not valid")
+    )
+
+def test_validate_frequency_not_a_number(self):
+    self.assertEqual(
+        validate_frequency("abc", [1, 2, 3, 6, 12, 24, 60]),
+        (False, "Frequency must be a whole number")
+    )
+
+def test_validate_frequency_empty(self):
+    self.assertEqual(
+        validate_frequency("", [1, 2, 3, 6, 12, 24, 60]),
+        (False, "Frequency cannot be empty")
+    )
+```
+
+This final test is a check of corruption, writing a single good row before two corrupted rows into the CSV, then makes sure the `load_results` only pulls the correct one back.
+```
+def test_load_results_skips_corrupted_row(self):
+    with open(storage.RESULTS_FILE, "w", newline="") as file:
+        file.write("game_id,player_name,total_score,attempt_started\n")
+        file.write("good1,Good Player,10,2026-01-01T09:30:00\n")
+        file.write("bad1,Bad Player,not-a-number,2026-01-01T09:30:00\n")
+        file.write("bad2,Bad Player,10,not-a-date\n")
+
+    results = load_results()
+
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0]["game_id"], "good1")
+```
+
+### Continuous Integration
+
+CI runs the same set of unit tests for every push and pull from GitHub, automatically through GitHub Actions. `.github/workflows/tests.yml` is used ot define the test that are run through powershell commands.
+
+```
+name: Run unit tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.12"
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+    - name: Run unit tests
+      run: python -m unittest discover -s tests -v
+```
+
+This runs tests in a clean Ubuntu environment with only the `requirements.txt` installed. This is great for TDD as we can write failing tests that we can then push fixes for later.
+
+![GitHub Actions](ci_images/GitHub_Actions.png)
+
+**Figure 15**: GitHub Actions run of the test suite for the Maximo PM Due Date Quiz.
+
+### Manual Testing Outcomes
+
+Table 4: Manual testing outcomes for the Maximo PM Due Date Quiz.
+
+| ID | Requirement | Steps | Input | Expected Result | Pass/Fail |
+|---|---|---|---|---|---|
+| MT1 | FR1 | Launch the app, view Landing frame |  | Two options shown: start a new quiz, view Leaderboard | Pass |
+| MT2 | FR2 | Leave name blank on User Details, click Continue | **NULL** | Error message displays, does not proceed | Pass |
+| MT3 | FR2 | Enter only spaces as name, click Continue | "   " | Error message displays, does not proceed | Pass |
+| MT4 | FR3 | Complete a quiz, click Retake Quiz |  | User Details frame shows previous player's name, pre-filled and editable | Pass |
+| MT5 | FR6 | Submit an exactly correct due date and frequency | Correct values | Question marked correct, taken to Timeline frame | Pass |
+| MT6 | FR6 | Submit an incorrect answer three times | Three wrong values | Question completes after 3rd attempt, marked incorrect | Pass |
+| MT7 | FR7 | Submit two incorrect guesses in a row | Two wrong values | Both incorrect guesses listed and stay visible | Pass |
+| MT8 | FR8 | Complete a question (correct or after 3 attempts) |  | Correct frequency, due date, and PM timeline revealed | Pass |
+| MT9 | FR10 | Reach question 10's Timeline frame |  | Button reads "View Results" instead of "Next Question" | Pass |
+| MT10 | FR11 | Reach Results frame |  | Player name and score shown, with View Leaderboard, Retake Quiz, Return Home | Pass |
+| MT11 | FR12 | Open Leaderboard with 10+ stored attempts |  | Top 10 shown by score, ties broken by recency | Pass |
+| MT12 | FR13 | Click an attempt, then a question, on the Leaderboard |  | Drills into that question's Timeline frame | Pass |
+| MT13 | FR14 | Click Export History |  | Attempt summary history exported to chosen location | Pass |
+| MT14 | NFR2 | Resize window to 1440x1024 |  | All primary controls usable without resizing | Pass |
+| MT15 | NFR4 | Launch app on a clean setup with no existing CSVs |  | Loads to Landing page within 3 seconds, no errors | Pass |
 
 ## Documentation
 
