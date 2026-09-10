@@ -18,7 +18,8 @@ from question_bank import generate_question_bank
 from pm_logic import (
     calculate_next_due_date,
     generate_timeline,
-    get_base_frequency
+    get_base_frequency,
+    score_for_attempt
 )
 
 if sys.platform == "win32":
@@ -625,7 +626,8 @@ class QuizApp(tk.Tk):
 
             self.complete_question(
                 "Correct!",
-                self.correct_colour
+                self.correct_colour,
+                correct=True
             )
 
         else:
@@ -665,10 +667,14 @@ class QuizApp(tk.Tk):
             if self.attempts >= 3:
                 self.complete_question(
                     "No attempts\nremaining.",
-                    self.error_colour
+                    self.error_colour,
+                    correct=False
                 )
 
-    def complete_question(self, message, colour):
+    def complete_question(self, message, colour, correct):
+        score = score_for_attempt(self.attempts, correct)
+        self.total_score += score
+
         self.incorrect_guesses_label.destroy()
         self.incorrect_guesses_frame.destroy()
 
@@ -917,7 +923,13 @@ class QuizApp(tk.Tk):
         )
 
     def next_question(self):
-        print("Next question")
+        if self.current_question_index < len(self.questions) - 1:
+            self.current_question_index += 1
+            self.current_question = self.questions[self.current_question_index]
+
+            self.build_quiz_screen()
+        else:
+            print(f"Quiz complete. Score: {self.total_score}")
 
     def build_leaderboard_screen(self):
         self.reset_screen()
@@ -936,6 +948,8 @@ class QuizApp(tk.Tk):
         self.questions = generate_question_bank(
             number_of_questions=10
         )
+
+        self.total_score = 0
 
         self.current_question_index = 0
         self.current_question = self.questions[0]
