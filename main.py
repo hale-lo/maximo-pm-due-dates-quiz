@@ -274,18 +274,11 @@ class QuizApp(tk.Tk):
 
         self.error_label.pack(
             padx=30,
-            anchor="w"
+            anchor="center"
         )
 
     def build_quiz_screen(self):
         self.reset_screen()
-
-        self.submit_button = self.create_menu_button(
-            "Submit Answer",
-            self.submit_answer,
-            pady=(30, 0),
-            side="top"
-        )
 
         question = self.current_question
         self.incorrect_guesses = []
@@ -313,6 +306,118 @@ class QuizApp(tk.Tk):
         self.attempts = 0
 
         tk.Label(
+            self.menu_frame,
+            text="Your Answer",
+            font=self.instruction_bold_font,
+            bg=self.primary_colour,
+            fg=self.bg_colour
+        ).pack(
+            padx=15,
+            pady=(30, 15),
+            anchor="w"
+        )
+
+        tk.Label(
+            self.menu_frame,
+            text="Next due date:",
+            font=self.button_font,
+            bg=self.primary_colour,
+            fg=self.bg_colour
+        ).pack(
+            padx=15,
+            anchor="w"
+        )
+
+        self.date_entry = tk.Entry(
+            self.menu_frame,
+            font=self.button_font,
+            width=20
+        )
+
+        self.date_entry.pack(
+            padx=15,
+            pady=(5, 15),
+            anchor="w"
+        )
+
+        tk.Label(
+            self.menu_frame,
+            text="Next frequency:",
+            font=self.button_font,
+            bg=self.primary_colour,
+            fg=self.bg_colour
+        ).pack(
+            padx=15,
+            anchor="w"
+        )
+
+        self.valid_frequencies = sorted(
+            details["months"]
+            for details in question["sequence"].values()
+        )
+
+        self.frequency_var = tk.StringVar()
+
+        self.frequency_dropdown = ttk.Combobox(
+            self.menu_frame,
+            textvariable=self.frequency_var,
+            values=self.valid_frequencies,
+            font=self.button_font,
+            width=17,
+            state="readonly"
+        )
+
+        self.frequency_dropdown.pack(
+            padx=15,
+            pady=(5, 10),
+            anchor="w"
+        )
+
+        self.answer_error_label = tk.Label(
+            self.menu_frame,
+            text="",
+            font=self.button_font,
+            bg=self.primary_colour,
+            fg=self.error_colour,
+            wraplength=165,
+            justify="center"
+        )
+
+        self.answer_error_label.pack(
+            anchor="center"
+        )
+
+        self.submit_button = self.create_menu_button(
+            "Submit Answer",
+            self.submit_answer,
+            pady=(5, 20),
+            side="top"
+        )
+
+        tk.Label(
+            self.menu_frame,
+            text="Incorrect\nGuesses",
+            font=self.instruction_bold_font,
+            bg=self.primary_colour,
+            fg=self.bg_colour
+        ).pack(
+            padx=15,
+            pady=(5, 5),
+            anchor="center"
+        )
+
+        self.incorrect_guesses_frame = tk.Frame(
+            self.menu_frame,
+            bg=self.primary_colour
+        )
+
+        self.incorrect_guesses_frame.pack(
+            padx=15,
+            fill="x",
+            anchor="w"
+        )
+
+        tk.Label(
             self.content_frame,
             text=f"Question {self.current_question_index + 1} of 10",
             font=self.title_font,
@@ -324,32 +429,71 @@ class QuizApp(tk.Tk):
             anchor="w"
         )
 
-        tk.Label(
+        question_frame = tk.Frame(
             self.content_frame,
+            bg=self.bg_colour
+        )
+
+        question_frame.pack(
+            fill="x",
+            padx=30,
+            pady=(0, 20)
+        )
+
+        question_frame.grid_columnconfigure(0, weight=1)
+        question_frame.grid_columnconfigure(1, weight=1)
+
+        asset_frame = tk.Frame(
+            question_frame,
+            bg=self.bg_colour,
+            highlightbackground=self.connected_colour,
+            highlightthickness=1,
+            padx=20,
+            pady=20
+        )
+
+        asset_frame.grid(
+            row=0,
+            column=0,
+            sticky="nsew",
+            padx=(0, 10)
+        )
+
+        tk.Label(
+            asset_frame,
+            text="Asset Data",
+            font=self.instruction_bold_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            anchor="w",
+            pady=(0, 15)
+        )
+
+        tk.Label(
+            asset_frame,
             text=f"Asset: {question['asset_name']}",
             font=self.instruction_bold_font,
             bg=self.bg_colour,
             fg=self.accent_colour
         ).pack(
-            padx=30,
-            pady=(5, 0),
-            anchor="w"
+            anchor="w",
+            pady=(0, 8)
         )
 
         tk.Label(
-            self.content_frame,
+            asset_frame,
             text=f"PM: {question['pm_id']}",
             font=self.instruction_font,
             bg=self.bg_colour,
             fg=self.accent_colour
         ).pack(
-            padx=30,
-            pady=(5, 0),
-            anchor="w"
+            anchor="w",
+            pady=(0, 8)
         )
 
         tk.Label(
-            self.content_frame,
+            asset_frame,
             text=(
                 "Last Completed: "
                 f"{question['last_completed'].strftime('%d/%m/%Y')}"
@@ -358,181 +502,63 @@ class QuizApp(tk.Tk):
             bg=self.bg_colour,
             fg=self.accent_colour
         ).pack(
-            padx=30,
-            pady=(5, 0),
-            anchor="w"
+            anchor="w",
+            pady=(0, 8)
         )
 
         tk.Label(
-            self.content_frame,
+            asset_frame,
             text=f"Current Counter: {question['start_counter']}",
             font=self.instruction_font,
             bg=self.bg_colour,
             fg=self.accent_colour
         ).pack(
-            padx=30,
-            pady=(5, 20),
             anchor="w"
         )
 
+        jobplan_frame = tk.Frame(
+            question_frame,
+            bg=self.bg_colour,
+            highlightbackground=self.connected_colour,
+            highlightthickness=1,
+            padx=20,
+            pady=20
+        )
+
+        jobplan_frame.grid(
+            row=0,
+            column=1,
+            sticky="nsew",
+            padx=(10, 0)
+        )
+
         tk.Label(
-            self.content_frame,
+            jobplan_frame,
             text="Job Plan Sequence",
             font=self.instruction_bold_font,
             bg=self.bg_colour,
             fg=self.accent_colour
         ).pack(
-            padx=30,
-            pady=(10, 5),
-            anchor="w"
+            anchor="w",
+            pady=(0, 15)
         )
 
         for jobplan, details in question["sequence"].items():
             tk.Label(
-                self.content_frame,
+                jobplan_frame,
                 text=(
-                    f"{jobplan}    "
+                    f"{jobplan}\n"
                     f"Interval: {details['interval']}    "
                     f"Frequency: {details['months']} months"
                 ),
                 font=self.instruction_font,
                 bg=self.bg_colour,
-                fg=self.accent_colour
+                fg=self.accent_colour,
+                justify="left"
             ).pack(
-                padx=50,
-                pady=(3, 0),
-                anchor="w"
+                anchor="w",
+                pady=(0, 12)
             )
-
-        tk.Label(
-            self.content_frame,
-            text="Your Answer",
-            font=self.title_font,
-            bg=self.bg_colour,
-            fg=self.accent_colour
-        ).pack(
-            padx=30,
-            pady=(30, 10),
-            anchor="w"
-        )
-
-        answer_frame = tk.Frame(
-            self.content_frame,
-            bg=self.bg_colour
-        )
-
-        answer_frame.pack(
-            padx=30,
-            pady=(5, 10),
-            anchor="w"
-        )
-
-        date_frame = tk.Frame(
-            answer_frame,
-            bg=self.bg_colour
-        )
-
-        date_frame.pack(
-            side="left",
-            padx=(0, 40)
-        )
-
-        tk.Label(
-            date_frame,
-            text="Next due date:",
-            font=self.instruction_font,
-            bg=self.bg_colour,
-            fg=self.accent_colour
-        ).pack(
-            anchor="w",
-            pady=(0, 5)
-        )
-
-        self.date_entry = tk.Entry(
-            date_frame,
-            font=self.instruction_font,
-            width=20
-        )
-
-        self.date_entry.pack(
-            anchor="w"
-        )
-
-        frequency_frame = tk.Frame(
-            answer_frame,
-            bg=self.bg_colour
-        )
-
-        frequency_frame.pack(
-            side="left"
-        )
-
-        tk.Label(
-            frequency_frame,
-            text="Next frequency:",
-            font=self.instruction_font,
-            bg=self.bg_colour,
-            fg=self.accent_colour
-        ).pack(
-            anchor="w",
-            pady=(0, 5)
-        )
-
-        self.valid_frequencies = sorted(
-            details["months"]
-            for details in question["sequence"].values()
-        )
-
-        self.frequency_var = tk.StringVar()
-
-        self.frequency_dropdown = ttk.Combobox(
-            frequency_frame,
-            textvariable=self.frequency_var,
-            values=self.valid_frequencies,
-            font=self.instruction_font,
-            width=18,
-            state="readonly"
-        )
-
-        self.frequency_dropdown.pack(
-            anchor="w"
-        )
-
-        tk.Label(
-            self.content_frame,
-            text="Incorrect Guesses",
-            font=self.instruction_bold_font,
-            bg=self.bg_colour,
-            fg=self.accent_colour
-        ).pack(
-            padx=30,
-            pady=(15, 5),
-            anchor="w"
-        )
-
-        self.incorrect_guesses_frame = tk.Frame(
-            self.content_frame,
-            bg=self.bg_colour
-        )
-
-        self.incorrect_guesses_frame.pack(
-            padx=30,
-            anchor="w"
-        )
-
-        self.answer_error_label = tk.Label(
-            self.content_frame,
-            text="",
-            font=self.instruction_font,
-            bg=self.bg_colour,
-            fg=self.error_colour
-        )
-
-        self.answer_error_label.pack(
-            padx=30,
-            pady=(5, 0),
-            anchor="w"
-        )
 
     def submit_answer(self):
         due_date_text = self.date_entry.get()
@@ -588,21 +614,32 @@ class QuizApp(tk.Tk):
             tk.Label(
                 self.incorrect_guesses_frame,
                 text=(
-                    f"Attempt {self.attempts}: "
-                    f"{submitted_date.strftime('%d/%m/%Y')}  |  "
+                    f"Attempt {self.attempts}:"
+                ),
+                font=self.instruction_bold_font,
+                bg=self.primary_colour,
+                fg=self.error_colour
+            ).pack(
+                anchor="center",
+                pady=(2, 0)
+            )
+
+            tk.Label(
+                self.incorrect_guesses_frame,
+                text=(
+                    f"{submitted_date.strftime('%d/%m/%Y')}\n"
                     f"{frequency} months"
                 ),
                 font=self.instruction_font,
-                bg=self.bg_colour,
+                bg=self.primary_colour,
                 fg=self.error_colour
             ).pack(
-                anchor="w",
-                pady=(2, 0)
+                anchor="center"
             )
 
             if self.attempts >= 3:
                 self.complete_question(
-                    "No attempts remaining.",
+                    "No attempts\nremaining.",
                     self.error_colour
                 )
 
