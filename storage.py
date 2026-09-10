@@ -2,7 +2,16 @@ import csv
 import json
 import os
 import shutil
+from dataclasses import dataclass
 from datetime import datetime
+
+@dataclass
+class Attempt:
+    player_name: str
+    game_id: str
+    attempt_started: datetime
+    question_results: list
+    total_score: int
 
 RESULTS_FILE = "results.csv"
 TIMELINE_FILE = "timeline_entries.csv"
@@ -31,25 +40,25 @@ TIMELINE_FIELDNAMES = [
     "sequence"
 ]
 
-def save_attempt(player_name, game_id, attempt_started, question_results, total_score):
+def save_attempt(attempt):
     try:
         _append_row(
             RESULTS_FILE,
             RESULTS_FIELDNAMES,
             {
-                "game_id": game_id,
-                "player_name": player_name,
-                "total_score": total_score,
-                "attempt_started": attempt_started.isoformat()
+                "game_id": attempt.game_id,
+                "player_name": attempt.player_name,
+                "total_score": attempt.total_score,
+                "attempt_started": attempt.attempt_started.isoformat()
             }
         )
 
-        for result in question_results:
+        for result in attempt.question_results:
             _append_row(
                 TIMELINE_FILE,
                 TIMELINE_FIELDNAMES,
                 {
-                    "game_id": game_id,
+                    "game_id": attempt.game_id,
                     "question_number": result["question_number"],
                     "correct": result["correct"],
                     "score": result["score"],

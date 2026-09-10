@@ -23,6 +23,7 @@ from pm_logic import (
     score_for_attempt
 )
 from storage import (
+    Attempt,
     save_attempt,
     load_results,
     load_timeline_entries,
@@ -341,8 +342,8 @@ class QuizApp(tk.Tk):
             anchor="w"
         )
 
-        if retake and getattr(self, "player_name", None):
-            self.name_entry.insert(0, self.player_name)
+        if retake and getattr(self, "attempt", None):
+            self.name_entry.insert(0, self.attempt.player_name)
 
         self.error_label = tk.Label(
             self.content_frame,
@@ -728,7 +729,7 @@ class QuizApp(tk.Tk):
 
     def complete_question(self, message, colour, correct):
         score = score_for_attempt(self.attempts, correct)
-        self.total_score += score
+        self.attempt.total_score += score
 
         if correct:
             submitted_due_date = self.correct_due_date
@@ -738,7 +739,7 @@ class QuizApp(tk.Tk):
             submitted_due_date = last_guess["date"]
             submitted_frequency = last_guess["frequency"]
 
-        self.question_results.append({
+        self.attempt.question_results.append({
             "question_number": self.current_question_index + 1,
             "asset_name": self.current_question.asset_name,
             "pm_id": self.current_question.pm_id,
@@ -1028,13 +1029,7 @@ class QuizApp(tk.Tk):
 
             self.build_quiz_screen()
         else:
-            saved, message = save_attempt(
-                self.player_name,
-                self.game_id,
-                self.attempt_started,
-                self.question_results,
-                self.total_score
-            )
+            saved, message = save_attempt(self.attempt)
 
             if saved:
                 self.build_results_screen()
@@ -1077,7 +1072,7 @@ class QuizApp(tk.Tk):
 
         tk.Label(
             self.content_frame,
-            text=f"Player: {self.player_name}",
+            text=f"Player: {self.attempt.player_name}",
             font=self.instruction_bold_font,
             bg=self.bg_colour,
             fg=self.accent_colour
@@ -1089,7 +1084,7 @@ class QuizApp(tk.Tk):
 
         tk.Label(
             self.content_frame,
-            text=f"Final Score: {self.total_score} / 30",
+            text=f"Final Score: {self.attempt.total_score} / 30",
             font=self.instruction_bold_font,
             bg=self.bg_colour,
             fg=self.accent_colour
@@ -1198,7 +1193,7 @@ class QuizApp(tk.Tk):
             self.content_frame,
             (
                 ("Rank", 6, "center"),
-                ("Player", 28, "w"),
+                ("Player", 28, "center"),
                 ("Score", 10, "center"),
                 ("Date", 20, "center")
             ),
@@ -1360,8 +1355,8 @@ class QuizApp(tk.Tk):
         self.build_row_table(
             self.content_frame,
             (
-                ("Question", 6, "center"),
-                ("Asset", 28, "w"),
+                ("Question", 12, "center"),
+                ("Asset", 22, "w"),
                 ("Result", 14, "center"),
                 ("Score", 10, "center")
             ),
@@ -1423,16 +1418,17 @@ class QuizApp(tk.Tk):
             self.error_label.config(text=message)
             return
 
-        self.player_name = name
-
         self.questions = generate_question_bank(
             number_of_questions=10
         )
 
-        self.total_score = 0
-        self.question_results = []
-        self.attempt_started = datetime.now()
-        self.game_id = uuid.uuid4().hex
+        self.attempt = Attempt(
+            player_name=name,
+            game_id=uuid.uuid4().hex,
+            attempt_started=datetime.now(),
+            question_results=[],
+            total_score=0
+        )
 
         self.current_question_index = 0
         self.current_question = self.questions[0]
