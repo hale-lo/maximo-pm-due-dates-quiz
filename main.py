@@ -238,7 +238,7 @@ class QuizApp(tk.Tk):
             anchor="w"
         )
 
-    def build_name_screen(self):
+    def build_name_screen(self, retake=False):
         self.reset_screen()
 
         self.create_menu_button(
@@ -290,6 +290,9 @@ class QuizApp(tk.Tk):
             pady=(0, 20),
             anchor="w"
         )
+
+        if retake and getattr(self, "player_name", None):
+            self.name_entry.insert(0, self.player_name)
 
         self.error_label = tk.Label(
             self.content_frame,
@@ -963,10 +966,68 @@ class QuizApp(tk.Tk):
                 self.total_score
             )
 
-            if not saved:
-                print(message)
+            if saved:
+                self.build_results_screen()
+            else:
+                self.answer_error_label.config(
+                    text=f"Could not save results:\n{message}",
+                    fg=self.error_colour
+                )
 
-            print(f"Quiz complete. Score: {self.total_score}")
+    def build_results_screen(self):
+        self.reset_screen()
+
+        self.create_menu_button(
+            "View Leaderboard",
+            self.build_leaderboard_screen,
+            pady=(30, 0)
+        )
+
+        self.create_menu_button(
+            "Retake Quiz",
+            lambda: self.build_name_screen(retake=True)
+        )
+
+        self.create_menu_button(
+            "Return Home",
+            self.build_landing_screen
+        )
+
+        tk.Label(
+            self.content_frame,
+            text="Quiz Complete",
+            font=self.title_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(30, 10),
+            anchor="w"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text=f"Player: {self.player_name}",
+            font=self.instruction_bold_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(10, 5),
+            anchor="w"
+        )
+
+        tk.Label(
+            self.content_frame,
+            text=f"Final Score: {self.total_score} / 30",
+            font=self.instruction_bold_font,
+            bg=self.bg_colour,
+            fg=self.accent_colour
+        ).pack(
+            padx=30,
+            pady=(0, 20),
+            anchor="w"
+        )
 
     def build_leaderboard_screen(self):
         self.reset_screen()
