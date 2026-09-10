@@ -3,6 +3,7 @@ from tkinter import ttk
 from datetime import datetime
 import ctypes
 import sys
+import uuid
 
 import matplotlib.dates as mdates
 from matplotlib.figure import Figure
@@ -21,6 +22,7 @@ from pm_logic import (
     get_base_frequency,
     score_for_attempt
 )
+from storage import save_attempt
 
 if sys.platform == "win32":
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -675,6 +677,30 @@ class QuizApp(tk.Tk):
         score = score_for_attempt(self.attempts, correct)
         self.total_score += score
 
+        if correct:
+            submitted_due_date = self.correct_due_date
+            submitted_frequency = self.correct_frequency
+        else:
+            last_guess = self.incorrect_guesses[-1]
+            submitted_due_date = last_guess["date"]
+            submitted_frequency = last_guess["frequency"]
+
+        self.question_results.append({
+            "question_number": self.current_question_index + 1,
+            "asset_name": self.current_question["asset_name"],
+            "pm_id": self.current_question["pm_id"],
+            "last_completed": self.current_question["last_completed"],
+            "start_counter": self.current_question["start_counter"],
+            "sequence": self.current_question["sequence"],
+            "correct_due_date": self.correct_due_date,
+            "correct_frequency": self.correct_frequency,
+            "submitted_due_date": submitted_due_date,
+            "submitted_frequency": submitted_frequency,
+            "attempts": self.attempts,
+            "correct": correct,
+            "score": score
+        })
+
         self.incorrect_guesses_label.destroy()
         self.incorrect_guesses_frame.destroy()
 
@@ -929,6 +955,17 @@ class QuizApp(tk.Tk):
 
             self.build_quiz_screen()
         else:
+            saved, message = save_attempt(
+                self.player_name,
+                self.game_id,
+                self.attempt_started,
+                self.question_results,
+                self.total_score
+            )
+
+            if not saved:
+                print(message)
+
             print(f"Quiz complete. Score: {self.total_score}")
 
     def build_leaderboard_screen(self):
@@ -950,6 +987,9 @@ class QuizApp(tk.Tk):
         )
 
         self.total_score = 0
+        self.question_results = []
+        self.attempt_started = datetime.now()
+        self.game_id = uuid.uuid4().hex
 
         self.current_question_index = 0
         self.current_question = self.questions[0]
