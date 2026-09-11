@@ -16,6 +16,8 @@
     - [Continuous Integration](#continuous-integration)
     - [Manual Testing Outcomes](#manual-testing-outcomes)
 - [Documentation](#documentation)
+    - [User Documentation](#user-documentation)
+    - [Technical Documentation](#technical-documentation)
 - [Evaluation](#evaluation)
 
 ## Introduction
@@ -33,7 +35,7 @@ This quiz is aimed at users who will interact with Preventive Maintenance data t
 ## Design
 ### GUI Prototype
 
-The GUI and user journey were both generated in Figma, as a clickable prototype which covers the full user journey. I generated a Lo-Fi diagram in greyscale, deliberately keeping it sketch-style rather than a full deployment view, to allow for a more deliberate design style to be outlined later.
+The GUI and user journey were generated in Figma as a clickable prototype. I kept it as a Lo-Fi, greyscale sketch rather than a full deployment view, to allow a more deliberate design style to be outlined later.
 
 Figma prototype: [Maximo PM Due Date Quiz - AE2 - Design](https://www.figma.com/community/file/1679898121843546210)
 
@@ -53,7 +55,7 @@ The landing frame (Figure 1) holds the instructions to the quiz and provides the
 
 **Figure 2**: User Details frame of the Maximo PM Due Date Quiz Figma prototype.
 
-The User Details frame (Figure 2) holds an open text field for the user to type into. Once they have populated their name, they can click "Continue" to proceed to the first question of the quiz (Figure 4). If the user clicks "Continue" before they input their name, or only inputs whitespace, an error message will display (Figure 3). Otherwise, if they would like to review the instructions again, they can click the "Back" button, taking them to the Landing frame (Figure 1).
+The User Details frame (Figure 2) holds an open text field for the user's name. Once entered, clicking "Continue" proceeds to the first question (Figure 4). Clicking "Continue" with no name, or only whitespace, displays an error message instead (Figure 3). The "Back" button returns to the Landing frame (Figure 1) to review the instructions again.
 
 ##### User Details Frame - Validation Error
 ![User Details error frame prototype](figma/player-details_validation-error.png)
@@ -89,7 +91,7 @@ When an input doesn't exactly match the correct date and frequency, a red set of
 
 **Figure 7**: Timeline frame of the Maximo PM Due Date Quiz Figma prototype.
 
-Once a user reaches three incorrect guesses, or a single correct guess, they will be taken to the Timeline review frame, which displays the timeline of their PM Job Plans for the following two years. On this frame the text input fields and "Submit" button will be greyed out to stop inputs, and the "Next Question" button will show, which will navigate to another question frame where a new question will be generated (Figure 8).
+Reaching three incorrect guesses, or a single correct one, takes the user to the Timeline frame, showing their PM Job Plan timeline for the next two years. The text fields and "Submit" button grey out, and a "Next Question" button appears, leading to a new question (Figure 8).
 
 ##### Quiz Frame - Question Ten - Incorrect
 ![Quiz frame question ten prototype](figma/question_last.png)
@@ -101,7 +103,7 @@ Once a user reaches three incorrect guesses, or a single correct guess, they wil
 
 **Figure 9**: Quiz frame question ten timeline of the Maximo PM Due Date Quiz Figma prototype.
 
-This frame is the only quiz frame that has a different action button: on the final question's timeline frame, the user will see "Next Question" has changed to "View Results", which will take the user to the Result frame instead (Figure 10).
+This is the only quiz frame with a different action button, on question ten's Timeline frame, "Next Question" changes to "View Results", taking the user to the Result frame instead (Figure 10).
 
 ##### Quiz Frame - Result Frame
 ![Quiz frame question ten prototype](figma/question_quiz-complete.png)
@@ -127,7 +129,7 @@ Following this, the user has three actions:
 
 **Figure 11**: Leaderboard frame of the Maximo PM Due Date Quiz Figma prototype.
 
-The Leaderboard frame is a table which displays the stored data of previous users, ranking them from first to last, ordered by score and date played. It is part of a three-level Treeview, in which each table is interactive: clicking an entry in the leaderboard will take the user to the Questions frame (Figure 12). The "Export History" button will provide a download of the leaderboard with game information, whilst the "Back" button will return the user to the Landing frame (Figure 1).
+The Leaderboard frame is a table of stored user data, ranked from first to last by score and date played. It is part of a three-level Treeview, clicking an entry opens the Questions frame (Figure 12). "Export History" downloads the leaderboard with game information, and "Back" returns to the Landing frame (Figure 1).
 
 ##### Quiz Frame - Leaderboard - Questions
 ![Leaderboard](figma/leaderboard_question-scores.png)
@@ -406,7 +408,46 @@ Table 4: Manual testing outcomes for the Maximo PM Due Date Quiz.
 
 ## Documentation
 
+### User Documentation
+Open the quiz. From the Landing frame, choose "Start Quiz" to begin, or "View Leaderboard" to see previous results (Figure 1).
 
+Enter your name. Type your name and click "Continue". If the field is left blank, an error message will ask you to enter a name before continuing (Figures 2–3).
+
+Answer each question. Using the Asset, PM and Job Plan details shown on screen, enter the next due date and select the frequency, then click "Submit" (Figure 4). You have three attempts per question, each incorrect guess is listed on screen (Figure 6). Once you answer correctly, or use all three attempts, the correct answer and a timeline are revealed (Figure 7).
+
+Move to the next question. Click "Next Question" to continue, this repeats for all ten questions. On the tenth question, this button becomes "View Results" instead (Figure 9).
+
+View your results. Your score out of 30 is shown, along with three options: "View Leaderboard," "Retake Quiz," or "Return Home" (Figure 10).
+
+Check the Leaderboard. The top 10 scores are listed here. Click a name to see that attempt's answers, and click a question to see its timeline (Figures 11–13). Use "Export History" to save a copy of the full results, or "Back" to return home.
+
+### Technical Documentation
+
+This application requires Python 3.12 or above.
+
+To run it locally:
+
+```
+git clone https://github.com/hale-lo/maximo-pm-due-dates-quiz
+cd maximo-pm-due-dates-quiz
+pip install -r requirements.txt
+python main.py
+```
+
+To run the test suite locally, the same way CI runs it:
+
+python -m unittest discover -s tests -v
+
+For anyone maintaining this codebase, main.py holds the QuizApp GUI and is the entry point, while pm_logic.py, validators.py, question_bank.py and storage.py hold the logic behind it, each explained in the Development section above.
 
 ## Evaluation
 
+Generally the design plan went well. I matched my Figma prototype almost exactly, which let me write the GUI code faster for each screen since I already knew where everything was meant to go, giving me a code structure to start from. My own prior experience also helped with the code design, I was able to look back at previous work and base fixes and functions around it.
+
+What went poorly was the choice of Tkinter. It has benefits long term, but the application ended up looking rough. I could have spent more time on a firm colour scheme before building, so a Hi-Fi design after my sketch might have worked better. A web application would probably have allowed for a more specific design style, and been more satisfying for the user.
+
+Nothing strayed too far from the plan during development. I did have to build more workarounds than I'd like to keep it in line with it, and I implemented OOP later than I should have, since I was writing code freely rather than following the design I'd set out.
+
+I didn't leave anything out of the required features, but the biggest limitation is that it feels static, I'd like it to be more interactive for the user. One thing I wanted to add was showing a player's incorrect guesses on the timeline as well, to help them see where they went wrong, but that came down to time, and keeping the MVP clean took priority.
+
+If I kept working on this, I'd use it as a base and put a lot more effort into the overall design and how it feels to use, maybe adding sound and making the application more responsive.
