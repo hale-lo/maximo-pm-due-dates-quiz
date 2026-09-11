@@ -1,4 +1,4 @@
-# maximo-pm-due-dates-quiz
+# Maximo: A PM Next Due Date Quiz
 
 ## Table of Contents
 
@@ -39,6 +39,10 @@ The GUI and user journey were generated in Figma as a clickable prototype. I kep
 
 Figma prototype: [Maximo PM Due Date Quiz - AE2 - Design](https://www.figma.com/community/file/1679898121843546210)
 
+![User workflow prototype](figma/full-user-workflow.png)
+
+**Figure 1**: An image of the Maximo PM Due Date Quiz Figma prototype workflow.
+
 ---
 
 #### Figma GUI Walkthrough of User Journey:
@@ -46,69 +50,69 @@ Figma prototype: [Maximo PM Due Date Quiz - AE2 - Design](https://www.figma.com/
 ##### Landing Frame
 ![Landing frame prototype](figma/landing.png)
 
-**Figure 1**: Landing frame of the Maximo PM Due Date Quiz Figma prototype.
+**Figure 2**: Landing frame of the Maximo PM Due Date Quiz Figma prototype.
 
-The landing frame (Figure 1) holds the instructions to the quiz and provides the user with two directions: one to start a new quiz, taking them to the User Details frame (Figure 2), or the other to view the leaderboard (Figure 11).
+The landing frame (Figure 2) holds the instructions to the quiz and provides the user with two directions: one to start a new quiz, taking them to the User Details frame (Figure 3), or the other to view the leaderboard (Figure 12).
 
 ##### User Details Frame
 ![User Details frame prototype](figma/player-details.png)
 
-**Figure 2**: User Details frame of the Maximo PM Due Date Quiz Figma prototype.
+**Figure 3**: User Details frame of the Maximo PM Due Date Quiz Figma prototype.
 
-The User Details frame (Figure 2) holds an open text field for the user's name. Once entered, clicking "Continue" proceeds to the first question (Figure 4). Clicking "Continue" with no name, or only whitespace, displays an error message instead (Figure 3). The "Back" button returns to the Landing frame (Figure 1) to review the instructions again.
+The User Details frame (Figure 3) holds an open text field for the user's name. Once entered, clicking "Continue" proceeds to the first question (Figure 5). Clicking "Continue" with no name, or only whitespace, displays an error message instead (Figure 4). The "Back" button returns to the Landing frame (Figure 2) to review the instructions again.
 
 ##### User Details Frame - Validation Error
 ![User Details error frame prototype](figma/player-details_validation-error.png)
 
-**Figure 3**: User Details frame with error of the Maximo PM Due Date Quiz Figma prototype.
+**Figure 4**: User Details frame with error of the Maximo PM Due Date Quiz Figma prototype.
 
 ##### Quiz Frame - Question One
 ![Quiz frame question one prototype](figma/question_first.png)
 
-**Figure 4**: Quiz frame of the Maximo PM Due Date Quiz Figma prototype.
+**Figure 5**: Quiz frame of the Maximo PM Due Date Quiz Figma prototype.
 
 When a user loads the quiz frame it will generate synthetic Asset, PM and Job Plan data for the question, including a Last Completed date, Current PM Counter, and Job Plan Intervals and Frequencies. The user will take their knowledge from the introduction and use it to calculate and input a date value into the "Next Due Date" field, followed by an integer in the "Frequency" dropdown. There is only one action from this frame, but it has multiple outputs:
-1. If there is an incorrect value in either field, an error will occur and display as in Figure 5.
-2. If the answer is wrong, it will display below "Incorrect Guesses" (Figure 6).
-3. If the answer is correct, the user will be taken to the summary timeline (Figure 7).
+1. If there is an incorrect value in either field, an error will occur and display as in Figure 6.
+2. If the answer is wrong, it will display below "Incorrect Guesses" (Figure 7).
+3. If the answer is correct, the user will be taken to the summary timeline (Figure 8).
 
 This is replicated ten times over, once for each randomly generated question.
 
 ##### Quiz Frame - Question One - Invalid Input
 ![Quiz frame question one prototype](figma/question_first_validation-error.png)
 
-**Figure 5**: Quiz frame with invalid value of the Maximo PM Due Date Quiz Figma prototype.
+**Figure 6**: Quiz frame with invalid value of the Maximo PM Due Date Quiz Figma prototype.
 
 ##### Quiz Frame - Question One - Incorrect
 ![Quiz frame question one with incorrect guess prototype](figma/question_first_incorrect.png)
 
-**Figure 6**: Quiz frame with incorrect guess of the Maximo PM Due Date Quiz Figma prototype.
+**Figure 7**: Quiz frame with incorrect guess of the Maximo PM Due Date Quiz Figma prototype.
 
-When an input doesn't exactly match the correct date and frequency, a red set of text will appear below the "Incorrect Guesses" section of the frame, informing the user of their prior guess. The user will get three guesses in total. On a correct guess, or the third incorrect guess, they will be taken to the Timeline frame (Figure 7).
+When an input doesn't exactly match the correct date and frequency, a red set of text will appear below the "Incorrect Guesses" section of the frame, informing the user of their prior guess. The user will get three guesses in total. On a correct guess, or the third incorrect guess, they will be taken to the Timeline frame (Figure 8).
 
 ##### Quiz Frame - Question One - Correct Timeline
 ![Quiz frame question ten prototype](figma/question_first_correct.png)
 
-**Figure 7**: Timeline frame of the Maximo PM Due Date Quiz Figma prototype.
+**Figure 8**: Timeline frame of the Maximo PM Due Date Quiz Figma prototype.
 
-Reaching three incorrect guesses, or a single correct one, takes the user to the Timeline frame, showing their PM Job Plan timeline for the next two years. The text fields and "Submit" button grey out, and a "Next Question" button appears, leading to a new question (Figure 8).
+Reaching three incorrect guesses, or a single correct one, takes the user to the Timeline frame, showing their PM Job Plan timeline for the next two years. The text fields and "Submit" button grey out, and a "Next Question" button appears, leading to a new question (Figure 9).
 
 ##### Quiz Frame - Question Ten - Incorrect
 ![Quiz frame question ten prototype](figma/question_last.png)
 
-**Figure 8**: Quiz frame question ten of the Maximo PM Due Date Quiz Figma prototype.
+**Figure 9**: Quiz frame question ten of the Maximo PM Due Date Quiz Figma prototype.
 
 ##### Quiz Frame - Question Ten - Correct Timeline
 ![Quiz frame question ten prototype](figma/question_last_correct.png)
 
-**Figure 9**: Quiz frame question ten timeline of the Maximo PM Due Date Quiz Figma prototype.
+**Figure 10**: Quiz frame question ten timeline of the Maximo PM Due Date Quiz Figma prototype.
 
-This is the only quiz frame with a different action button, on question ten's Timeline frame, "Next Question" changes to "View Results", taking the user to the Result frame instead (Figure 10).
+This is the only quiz frame with a different action button, on question ten's Timeline frame, "Next Question" changes to "View Results", taking the user to the Result frame instead (Figure 11).
 
 ##### Quiz Frame - Result Frame
 ![Quiz frame question ten prototype](figma/question_quiz-complete.png)
 
-**Figure 10**: Quiz complete frame of the Maximo PM Due Date Quiz Figma prototype.
+**Figure 11**: Quiz complete frame of the Maximo PM Due Date Quiz Figma prototype.
 
 The Result frame is a simple frame that brings together some of the data stored across the quiz. Each question is worth 0-3 points, depending on how many guesses it took to answer correctly:
 
@@ -117,33 +121,33 @@ The Result frame is a simple frame that brings together some of the data stored 
         3 Guesses = 1 Point
         Incorrect = 0 Points
 
-This will provide a final score out of 30 for the player, which will be displayed on their Quiz Complete frame (Figure 10).
+This will provide a final score out of 30 for the player, which will be displayed on their Quiz Complete frame (Figure 11).
 
 Following this, the user has three actions:
-1. View Leaderboard: Review where they placed in comparison with the other top 10 users (Figure 11).
-2. Retake Quiz: This will take them back to the User Details frame (Figure 2), but will keep their current player name.
-3. Return Home: This will take the player back to the Landing frame (Figure 1).
+1. View Leaderboard: Review where they placed in comparison with the other top 10 users (Figure 12).
+2. Retake Quiz: This will take them back to the User Details frame (Figure 3), but will keep their current player name.
+3. Return Home: This will take the player back to the Landing frame (Figure 2).
 
 ##### Quiz Frame - Leaderboard
 ![Leaderboard](figma/leaderboard.png)
 
-**Figure 11**: Leaderboard frame of the Maximo PM Due Date Quiz Figma prototype.
+**Figure 12**: Leaderboard frame of the Maximo PM Due Date Quiz Figma prototype.
 
-The Leaderboard frame is a table of stored user data, ranked from first to last by score and date played. It is part of a three-level Treeview, clicking an entry opens the Questions frame (Figure 12). "Export History" downloads the leaderboard with game information, and "Back" returns to the Landing frame (Figure 1).
+The Leaderboard frame is a table of stored user data, ranked from first to last by score and date played. It is part of a three-level Treeview, clicking an entry opens the Questions frame (Figure 13). "Export History" downloads the leaderboard with game information, and "Back" returns to the Landing frame (Figure 2).
 
 ##### Quiz Frame - Leaderboard - Questions
 ![Leaderboard](figma/leaderboard_question-scores.png)
 
-**Figure 12**: Leaderboard questions frame of the Maximo PM Due Date Quiz Figma prototype.
+**Figure 13**: Leaderboard questions frame of the Maximo PM Due Date Quiz Figma prototype.
 
-On the Questions frame, it will display the list of 10 questions which were asked and the score the player received for each question. This is again a Treeview which can be drilled into to review the Timeline frame (Figure 13) for that specific question. There is also a navigation button to go back to the Leaderboard frame (Figure 11).
+On the Questions frame, it will display the list of 10 questions which were asked and the score the player received for each question. This is again a Treeview which can be drilled into to review the Timeline frame (Figure 14) for that specific question. There is also a navigation button to go back to the Leaderboard frame (Figure 12).
 
 ##### Quiz Frame - Leaderboard - Questions - Timeline
 ![Leaderboard](figma/leaderboard_question-timeline.png)
 
-**Figure 13**: Leaderboard question timeline frame of the Maximo PM Due Date Quiz Figma prototype.
+**Figure 14**: Leaderboard question timeline frame of the Maximo PM Due Date Quiz Figma prototype.
 
-The final frame of this Treeview displays the timeline of the question selected on the prior frame (Figure 12). It takes the data from a saved CSV and displays it alongside a legend informing the user of which Job Plans and Frequencies the points relate to. The "Back" button on this frame will take the user back to the Questions frame (Figure 12) for the previously selected question.
+The final frame of this Treeview displays the timeline of the question selected on the prior frame (Figure 13). It takes the data from a saved CSV and displays it alongside a legend informing the user of which Job Plans and Frequencies the points relate to. The "Back" button on this frame will take the user back to the Questions frame (Figure 13) for the previously selected question.
 
 ### Functional Requirements
 
@@ -195,11 +199,11 @@ Table 3: Tech stack used in the Maximo PM Due Date Quiz.
 
 ### Code Design
 
-The application is built around three classes: `QuizApp`, `Attempt`, and `Question`. I kept this small, following prior advice not to overcomplicate the design. `QuizApp` inherits from `tk.Tk`. Everything else is built through composition instead. `Attempt` and `Question` are plain dataclasses holding data only, with no behaviour of their own. The scoring, timeline, and due-date logic all live separately in `pm_logic.py`, so that logic can be unit tested without needing the GUI. The relationship between the three classes is shown below in Figure 14.
+The application is built around three classes: `QuizApp`, `Attempt`, and `Question`. I kept this small, following prior advice not to overcomplicate the design. `QuizApp` inherits from `tk.Tk`. Everything else is built through composition instead. `Attempt` and `Question` are plain dataclasses holding data only, with no behaviour of their own. The scoring, timeline, and due-date logic all live separately in `pm_logic.py`, so that logic can be unit tested without needing the GUI. The relationship between the three classes is shown below in Figure 15.
 
 ![Class diagram](draw.io/class-diagram.png)
 
-**Figure 14**: Class diagram of the Maximo PM Due Date Quiz, showing QuizApp, Attempt, and Question.
+**Figure 15**: Class diagram of the Maximo PM Due Date Quiz, showing QuizApp, Attempt, and Question.
 
 ## Development
 
@@ -382,7 +386,7 @@ This runs tests in a clean Ubuntu environment with only the `requirements.txt` i
 
 ![GitHub Actions](ci_images/GitHub_Actions.png)
 
-**Figure 15**: GitHub Actions run of the test suite for the Maximo PM Due Date Quiz.
+**Figure 16**: GitHub Actions run of the test suite for the Maximo PM Due Date Quiz.
 
 ### Manual Testing Outcomes
 
@@ -409,17 +413,17 @@ Table 4: Manual testing outcomes for the Maximo PM Due Date Quiz.
 ## Documentation
 
 ### User Documentation
-Open the quiz. From the Landing frame, choose "Start Quiz" to begin, or "View Leaderboard" to see previous results (Figure 1).
+Open the quiz. From the Landing frame, choose "Start Quiz" to begin, or "View Leaderboard" to see previous results (Figure 2).
 
-Enter your name. Type your name and click "Continue". If the field is left blank, an error message will ask you to enter a name before continuing (Figures 2–3).
+Enter your name. Type your name and click "Continue". If the field is left blank, an error message will ask you to enter a name before continuing (Figures 3–4).
 
-Answer each question. Using the Asset, PM and Job Plan details shown on screen, enter the next due date and select the frequency, then click "Submit" (Figure 4). You have three attempts per question, each incorrect guess is listed on screen (Figure 6). Once you answer correctly, or use all three attempts, the correct answer and a timeline are revealed (Figure 7).
+Answer each question. Using the Asset, PM and Job Plan details shown on screen, enter the next due date and select the frequency, then click "Submit" (Figure 5). You have three attempts per question, each incorrect guess is listed on screen (Figure 7). Once you answer correctly, or use all three attempts, the correct answer and a timeline are revealed (Figure 8).
 
-Move to the next question. Click "Next Question" to continue, this repeats for all ten questions. On the tenth question, this button becomes "View Results" instead (Figure 9).
+Move to the next question. Click "Next Question" to continue, this repeats for all ten questions. On the tenth question, this button becomes "View Results" instead (Figure 10).
 
-View your results. Your score out of 30 is shown, along with three options: "View Leaderboard," "Retake Quiz," or "Return Home" (Figure 10).
+View your results. Your score out of 30 is shown, along with three options: "View Leaderboard," "Retake Quiz," or "Return Home" (Figure 11).
 
-Check the Leaderboard. The top 10 scores are listed here. Click a name to see that attempt's answers, and click a question to see its timeline (Figures 11–13). Use "Export History" to save a copy of the full results, or "Back" to return home.
+Check the Leaderboard. The top 10 scores are listed here. Click a name to see that attempt's answers, and click a question to see its timeline (Figures 12–14). Use "Export History" to save a copy of the full results, or "Back" to return home.
 
 ### Technical Documentation
 
